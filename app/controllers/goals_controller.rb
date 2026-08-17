@@ -1,5 +1,6 @@
 class GoalsController < ApplicationController
   before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer ]
+  before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
 
   def new
     @goal = Goal.new(
@@ -120,7 +121,7 @@ class GoalsController < ApplicationController
             partial: "goals/goal",
             locals: { goal: @goal, reference_date: occurred_on, completion: completion }
           ),
-          turbo_stream.replace("gamification-summary", partial: "shared/gamification_summary")
+          turbo_stream.replace("gamification-summary", partial: "shared/points_pill")
         ]
       end
     end

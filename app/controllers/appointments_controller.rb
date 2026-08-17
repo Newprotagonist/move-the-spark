@@ -1,5 +1,6 @@
 class AppointmentsController < ApplicationController
   before_action :set_appointment, only: [ :edit, :update, :destroy ]
+  before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
 
   def index
     @appointments = Appointment.upcoming

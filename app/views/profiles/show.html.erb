@@ -1,0 +1,24 @@
+<% content_for :title, "Planner — Moi" %>
+
+<%= render "shared/screen_header", kicker: "profil", title: "Ta progression" %>
+
+<div class="rounded-[22px] bg-ink text-paper p-5 mb-4">
+  <div class="font-mono text-[10px] tracking-[.16em] uppercase opacity-60">Total</div>
+  <div class="flex items-baseline gap-2 mt-2">
+    <span class="font-serif-display text-[58px] leading-none"><%= @total_points %></span>
+    <span class="text-[13px] opacity-70">points</span>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 gap-3 mb-4">
+  <div class="rounded-[18px] bg-paper border border-line p-4">
+    <div class="font-serif-display text-3xl leading-none"><%= @daily_streak %></div>
+    <div class="text-[11.5px] text-dim mt-1">jours de suite</div>
+  </div>
+</div>
+
+<%= link_to edit_settings_path, data: { turbo_frame: "sheet" },
+      class: "flex items-center justify-between px-4 py-4 rounded-[18px] bg-paper border border-line" do %>
+  <span class="text-sm font-semibold">Réglages &amp; notifications</span>
+  <span class="text-dim">→</span>
+<% end %>

@@ -1,25 +1,24 @@
 <% content_for :title, "Planner — semaine du #{l(@week_start, format: :short)}" %>
 
-<div class="flex items-center justify-between mb-6">
-  <%= link_to "← semaine préc.", week_path(date: @previous_week_start), class: "text-sm text-indigo-600 hover:underline" %>
-  <h1 class="text-lg font-semibold">
-    Semaine du <%= l(@week_start, format: :short) %> au <%= l(@week_end, format: :short) %>
-  </h1>
-  <%= link_to "semaine suiv. →", week_path(date: @next_week_start), class: "text-sm text-indigo-600 hover:underline" %>
+<%= render "shared/screen_header", kicker: "semaine", title: "#{l(@week_start, format: :short)} — #{l(@week_end, format: :short)}" %>
+
+<div class="flex items-center justify-between mb-4">
+  <%= link_to "← semaine préc.", week_path(date: @previous_week_start), class: "text-sm text-accent font-medium" %>
+  <%= link_to "semaine suiv. →", week_path(date: @next_week_start), class: "text-sm text-accent font-medium" %>
 </div>
 
-<p class="text-sm text-gray-500 mb-4">
+<p class="text-sm text-dim mb-4">
   🔥 <%= @weekly_streak %> semaine<%= "s" if @weekly_streak != 1 %> de suite
   <% if @week_progress %>
     · <%= @week_progress[:done] %>/<%= @week_progress[:total] %> objectif<%= "s" if @week_progress[:total] != 1 %> de la semaine accompli<%= "s" if @week_progress[:done] != 1 %>
   <% end %>
 </p>
 
-<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mb-6">
-  <h2 class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Objectifs de la semaine</h2>
+<section class="bg-paper rounded-[20px] border border-line divide-y divide-line mb-6">
+  <h2 class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold uppercase tracking-[.14em] text-dim">Objectifs de la semaine</h2>
 
   <% if @weekly_goals.empty? %>
-    <p class="px-4 pb-4 text-sm text-gray-400">Aucun objectif hebdomadaire.</p>
+    <p class="px-4 pb-4 text-sm text-dim">Aucun objectif hebdomadaire.</p>
   <% else %>
     <% @weekly_goals.each do |goal| %>
       <div class="px-4">
@@ -29,17 +28,17 @@
   <% end %>
 </section>
 
-<div class="space-y-4">
+<div class="space-y-3 pb-4">
   <% @days.each do |day| %>
     <% today = day[:date] == Date.current %>
-    <section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 <%= "ring-2 ring-indigo-500" if today %>">
-      <h2 class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide <%= today ? "text-indigo-600" : "text-gray-400" %>">
-        <%= link_to l(day[:date], format: :long).capitalize, day_path(date: day[:date]), class: "hover:underline" %>
+    <section class="bg-paper rounded-[20px] border divide-y divide-line <%= today ? "border-accent" : "border-line" %>">
+      <h2 class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold uppercase tracking-[.14em] <%= today ? "text-accent" : "text-dim" %>">
+        <%= link_to l(day[:date], format: :long).capitalize, day_path(date: day[:date]) %>
         <%= " · aujourd'hui" if today %>
       </h2>
 
       <% if day[:goals].empty? && day[:appointments].empty? %>
-        <p class="px-4 pb-3 text-sm text-gray-400">Rien de prévu.</p>
+        <p class="px-4 pb-3 text-sm text-dim">Rien de prévu.</p>
       <% else %>
         <% day[:goals].each do |goal| %>
           <div class="px-4">
@@ -56,6 +55,5 @@
   <% end %>
 </div>
 
-<div class="flex gap-3 mt-6">
-  <%= link_to "+ Objectif récurrent hebdomadaire", new_goal_path(recurring: true, frequency: "weekly"), class: "text-sm px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700" %>
-</div>
+<%= link_to "+ Objectif récurrent hebdomadaire", new_goal_path(recurring: true, frequency: "weekly"), data: { turbo_frame: "sheet" },
+      class: "block text-center py-3.5 rounded-2xl bg-ink text-paper text-[13.5px] font-semibold mb-4" %>

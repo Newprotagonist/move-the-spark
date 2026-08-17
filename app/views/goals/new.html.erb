@@ -1,4 +1,5 @@
 <% content_for :title, "Nouvel objectif — Planner" %>
 
-<h1 class="text-lg font-semibold mb-4">Nouvel objectif</h1>
-<%= render "form", goal: @goal %>
+<%= render layout: "shared/sheet_shell", locals: { title: "Nouvel objectif" } do %>
+  <%= render "form", goal: @goal %>
+<% end %>

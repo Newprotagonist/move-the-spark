@@ -1,4 +1,4 @@
 <% content_for :title, "Nouvelle liste — Planner" %>
 
-<h1 class="text-lg font-semibold mb-4">Nouvelle liste de courses</h1>
+<%= render "shared/screen_header", kicker: "courses", title: "Nouvelle liste" %>
 <%= render "form", shopping_list: @shopping_list %>

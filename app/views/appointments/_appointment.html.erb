@@ -1,14 +1,15 @@
 <div id="<%= dom_id(appointment) %>" class="flex items-center gap-3 py-2">
-  <span class="inline-flex h-6 w-14 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold shrink-0">
+  <span class="inline-flex h-6 w-14 items-center justify-center rounded-full bg-accent-soft text-accent-dark font-mono text-xs font-semibold shrink-0">
     <%= l(appointment.starts_at, format: :time_only) %>
   </span>
 
   <div class="flex-1 min-w-0">
-    <p class="truncate"><%= appointment.title %></p>
+    <p class="truncate text-[14.5px] font-semibold"><%= appointment.title %></p>
     <% if appointment.location.present? %>
-      <p class="text-xs text-gray-400 truncate"><%= appointment.location %></p>
+      <p class="text-xs text-dim truncate"><%= appointment.location %></p>
     <% end %>
   </div>
 
-  <%= link_to "Modifier", edit_appointment_path(appointment), class: "text-xs text-gray-400 hover:text-gray-600 shrink-0" %>
+  <%= link_to "Modifier", edit_appointment_path(appointment), data: { turbo_frame: "sheet" },
+        class: "font-mono text-[10.5px] text-dim shrink-0 py-2.5" %>
 </div>

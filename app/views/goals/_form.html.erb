@@ -1,6 +1,6 @@
-<%= form_with model: goal, class: "space-y-4" do |f| %>
+<%= form_with model: goal, class: "space-y-5", data: { turbo_frame: "_top" } do |f| %>
   <% if goal.errors.any? %>
-    <div class="rounded-md bg-red-50 text-red-800 text-sm px-4 py-3">
+    <div class="rounded-2xl bg-red-50 text-red-800 text-sm px-4 py-3">
       <p class="font-medium mb-1"><%= pluralize(goal.errors.count, "erreur") %> :</p>
       <ul class="list-disc list-inside">
         <% goal.errors.each do |error| %>
@@ -11,55 +11,75 @@
   <% end %>
 
   <div>
-    <%= f.label :title, "Titre", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true, required: true %>
+    <%= f.label :title, "Titre", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <%= f.text_field :title, placeholder: "Ex. Courir 5 km", autofocus: true, required: true,
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
   </div>
 
   <div>
-    <%= f.label :description, "Notes (optionnel)", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_area :description, rows: 2, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    <%= f.label :description, "Notes (optionnel)", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <%= f.text_area :description, rows: 2,
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
   </div>
 
   <div data-controller="goal-type">
     <div>
-      <%= f.label :recurring, "Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <div class="flex gap-4 text-sm">
-        <label class="flex items-center gap-1 py-1">
-          <%= f.radio_button :recurring, false, checked: !goal.recurring, data: { action: "goal-type#toggle" } %>
-          Ponctuel (un jour précis)
+      <div class="font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5">Type</div>
+      <div class="flex gap-1.5 p-1 rounded-2xl bg-line/60">
+        <label class="flex-1 text-center py-2.5 px-2 rounded-xl text-[12.5px] font-semibold cursor-pointer transition-colors
+                       has-[:checked]:bg-paper has-[:checked]:shadow-sm">
+          <%= f.radio_button :recurring, false, checked: !goal.recurring, class: "sr-only", data: { action: "goal-type#toggle" } %>
+          Ponctuel
         </label>
-        <label class="flex items-center gap-1 py-1">
-          <%= f.radio_button :recurring, true, checked: goal.recurring, data: { action: "goal-type#toggle", goal_type_target: "recurringRadio" } %>
+        <label class="flex-1 text-center py-2.5 px-2 rounded-xl text-[12.5px] font-semibold cursor-pointer transition-colors
+                       has-[:checked]:bg-paper has-[:checked]:shadow-sm">
+          <%= f.radio_button :recurring, true, checked: goal.recurring, class: "sr-only",
+                data: { action: "goal-type#toggle", goal_type_target: "recurringRadio" } %>
           Récurrent
         </label>
       </div>
     </div>
 
-    <div data-goal-type-target="oneOffFields" class="mt-4">
-      <%= f.label :scheduled_on, "Date", class: "block text-sm font-medium text-gray-700" %>
-      <%= f.date_field :scheduled_on, value: goal.scheduled_on || Date.current, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    <div data-goal-type-target="oneOffFields" class="mt-4" data-controller="chip-picker">
+      <%= f.label :scheduled_on, "Quand", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+      <div class="flex gap-1.5 flex-wrap mb-2">
+        <% [ [ "aujourd'hui", Date.current ], [ "demain", Date.current + 1 ], [ l(Date.current + 7, format: :short), Date.current + 7 ] ].each do |label, date| %>
+          <button type="button" data-chip-picker-target="chip" data-chip-value="<%= date %>" data-action="chip-picker#pick"
+                  class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= label %></button>
+        <% end %>
+      </div>
+      <%= f.date_field :scheduled_on, value: goal.scheduled_on || Date.current, data: { "chip-picker-target": "input" },
+            class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
     </div>
 
     <div data-goal-type-target="recurringFields" class="mt-4 space-y-4">
       <div>
-        <%= f.label :frequency, "Fréquence", class: "block text-sm font-medium text-gray-700" %>
-        <%= f.select :frequency, [ [ "Chaque jour", "daily" ], [ "Chaque semaine", "weekly" ] ], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+        <%= f.label :frequency, "Fréquence", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+        <%= f.select :frequency, [ [ "Chaque jour", "daily" ], [ "Chaque semaine", "weekly" ] ], {},
+              class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
       </div>
 
-      <div>
-        <%= f.label :active_from, "Actif à partir du", class: "block text-sm font-medium text-gray-700" %>
-        <%= f.date_field :active_from, value: goal.active_from || Date.current, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      <div data-controller="chip-picker">
+        <%= f.label :active_from, "Actif à partir du", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+        <div class="flex gap-1.5 flex-wrap mb-2">
+          <% [ [ "aujourd'hui", Date.current ], [ "demain", Date.current + 1 ] ].each do |label, date| %>
+            <button type="button" data-chip-picker-target="chip" data-chip-value="<%= date %>" data-action="chip-picker#pick"
+                    class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= label %></button>
+          <% end %>
+        </div>
+        <%= f.date_field :active_from, value: goal.active_from || Date.current, data: { "chip-picker-target": "input" },
+              class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
       </div>
     </div>
   </div>
 
   <div class="flex items-center gap-3 pt-2">
-    <%= f.submit class: "px-4 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
-    <%= link_to "Annuler", request.referer || root_path, class: "text-sm text-gray-500 hover:underline" %>
+    <%= f.submit (goal.persisted? ? "Enregistrer" : "Créer l’objectif"),
+          class: "flex-1 py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>
     <% if goal.persisted? %>
       <%= button_to "Supprimer", goal_path(goal), method: :delete,
-            class: "text-sm text-red-600 hover:underline bg-transparent border-0 p-0",
-            form: { class: "ml-auto", data: { turbo_confirm: "Supprimer cet objectif ?" } } %>
+            class: "text-[13px] text-red-600 bg-transparent border-0 p-2",
+            form: { data: { turbo_confirm: "Supprimer cet objectif ?", turbo_frame: "_top" } } %>
     <% end %>
   </div>
 <% end %>

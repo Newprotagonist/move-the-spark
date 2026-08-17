@@ -14,7 +14,7 @@ class AppointmentsTest < ApplicationSystemTestCase
     page.execute_script(
       "document.getElementById('appointment_starts_at').value = arguments[0]", starts_at_value
     )
-    click_on "Créer"
+    click_on "Ajouter au ruban"
 
     assert_text "Dentiste"
     assert_text "Cabinet Dr. Martin"

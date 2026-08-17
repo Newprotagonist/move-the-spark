@@ -7,14 +7,13 @@
     <meta name="application-name" content="Planner">
     <meta name="apple-mobile-web-app-title" content="Planner">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#C1673E">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <meta name="vapid-public-key" content="<%= Rails.application.credentials.dig(:vapid, :public_key) %>">
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
@@ -22,34 +21,66 @@
     <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 text-gray-900 min-h-screen">
-    <header class="bg-indigo-600 text-white">
-      <nav class="container mx-auto max-w-2xl px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium">
-        <%= link_to "Planner", root_path, class: "font-semibold text-base" %>
-        <%= link_to "Jour", root_path, class: "hover:underline py-1" %>
-        <%= link_to "Semaine", current_week_path, class: "hover:underline py-1" %>
-        <%= link_to "RDV", appointments_path, class: "hover:underline py-1" %>
-        <%= link_to "Courses", shopping_lists_path, class: "hover:underline py-1" %>
-        <%= link_to "⚙", edit_settings_path, class: "hover:underline py-1", "aria-label": "Réglages", title: "Réglages" %>
-        <div class="ml-auto text-white">
-          <%= render "shared/gamification_summary" %>
-        </div>
-      </nav>
-    </header>
-
-    <main class="container mx-auto max-w-2xl px-4 py-6">
-      <% flash.each do |type, message| %>
-        <div role="status" aria-live="polite" class="mb-4 rounded-md px-4 py-2 text-sm <%= type.to_s == "alert" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800" %>">
-          <%= message %>
-        </div>
-      <% end %>
-
+  <body class="bg-bg text-ink font-sans min-h-screen">
+    <% if @sheet %>
+      <%# This page IS a sheet form (goal/appointment/settings new or edit) — its own
+          view provides the "sheet" turbo-frame directly (see shared/_sheet_shell),
+          because Turbo Rails renders frame-scoped requests through a bare layout
+          that skips this file entirely, so the frame can't live here. %>
       <%= yield %>
-    </main>
+    <% else %>
+      <main class="max-w-[520px] mx-auto px-4 pb-28">
+        <% flash.each do |type, message| %>
+          <div role="status" aria-live="polite"
+               class="mt-4 rounded-2xl px-4 py-3 text-sm <%= type.to_s == "alert" ? "bg-red-100 text-red-800" : "bg-success-soft text-ink" %>">
+            <%= message %>
+          </div>
+        <% end %>
+
+        <%= yield %>
+      </main>
+
+      <%# Empty target frame: sheet-opening links elsewhere on the page load their
+          response into here (Turbo extracts the matching "sheet" frame from the
+          fetched page above). %>
+      <%= turbo_frame_tag "sheet", class: "fixed inset-0 z-40 empty:hidden empty:pointer-events-none", data: { controller: "sheet" } %>
+    <% end %>
+
+    <nav class="fixed bottom-0 inset-x-0 z-30 flex gap-0.5 px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-2
+                bg-[oklch(0.985_0.006_84)] border-t border-line">
+      <div class="max-w-[520px] mx-auto w-full flex gap-0.5">
+        <%= link_to root_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("days") ? "bg-bg text-ink" : "text-faint"}" do %>
+          <span class="block w-[15px] h-[15px] rounded-full border-2 border-current"></span>
+          <span class="text-[10px] font-semibold">Jour</span>
+        <% end %>
+        <%= link_to current_week_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("weeks") ? "bg-bg text-ink" : "text-faint"}" do %>
+          <span class="block w-[15px] h-[15px] rounded-sm border-2 border-current"></span>
+          <span class="text-[10px] font-semibold">Semaine</span>
+        <% end %>
+        <%= link_to appointments_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("appointments") ? "bg-bg text-ink" : "text-faint"}" do %>
+          <span class="block w-[15px] h-[11px] rounded-sm border-2 border-t-[5px] border-current"></span>
+          <span class="text-[10px] font-semibold">RDV</span>
+        <% end %>
+        <%= link_to shopping_lists_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("shopping_lists", "shopping_list_items") ? "bg-bg text-ink" : "text-faint"}" do %>
+          <span class="block w-[13px] h-[15px] rounded-b-[5px] border-2 border-t-0 border-current"></span>
+          <span class="text-[10px] font-semibold">Courses</span>
+        <% end %>
+        <%= link_to profile_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("profiles", "settings") ? "bg-bg text-ink" : "text-faint"}" do %>
+          <span class="block w-[15px] h-[15px] rounded-full bg-current"></span>
+          <span class="text-[10px] font-semibold">Moi</span>
+        <% end %>
+      </div>
+    </nav>
+
+    <%# Toast notifications get turbo_stream-appended here. %>
+    <div id="toasts" class="fixed inset-x-0 top-8 z-50 flex justify-center pointer-events-none"></div>
   </body>
 </html>

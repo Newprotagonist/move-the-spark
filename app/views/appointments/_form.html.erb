@@ -1,6 +1,6 @@
-<%= form_with model: appointment, class: "space-y-4" do |f| %>
+<%= form_with model: appointment, class: "space-y-5", data: { turbo_frame: "_top" } do |f| %>
   <% if appointment.errors.any? %>
-    <div class="rounded-md bg-red-50 text-red-800 text-sm px-4 py-3">
+    <div class="rounded-2xl bg-red-50 text-red-800 text-sm px-4 py-3">
       <p class="font-medium mb-1"><%= pluralize(appointment.errors.count, "erreur") %> :</p>
       <ul class="list-disc list-inside">
         <% appointment.errors.each do |error| %>
@@ -11,38 +11,49 @@
   <% end %>
 
   <div>
-    <%= f.label :title, "Titre", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true, required: true %>
+    <%= f.label :title, "Titre", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <%= f.text_field :title, placeholder: "Ex. Dentiste", autofocus: true, required: true,
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
   </div>
 
   <div>
-    <%= f.label :starts_at, "Date et heure", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.datetime_field :starts_at, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", required: true %>
+    <%= f.label :location, "Lieu (optionnel)", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <%= f.text_field :location, placeholder: "Ex. Cabinet, rue Victor Hugo",
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
+  </div>
+
+  <div data-controller="chip-picker">
+    <%= f.label :starts_at, "Date et heure", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <div class="flex gap-1.5 flex-wrap mb-2">
+      <% [ "08:00", "09:00", "10:30", "12:30", "14:30", "18:45" ].each do |time| %>
+        <button type="button" data-chip-picker-target="chip" data-chip-value="<%= Date.current %>T<%= time %>" data-action="chip-picker#pick"
+                class="px-3.5 py-2 rounded-full text-[12.5px] font-mono font-semibold border border-line bg-paper min-h-9"><%= time %></button>
+      <% end %>
+    </div>
+    <%= f.datetime_field :starts_at, required: true, data: { "chip-picker-target": "input" },
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
   </div>
 
   <div>
-    <%= f.label :location, "Lieu (optionnel)", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :location, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    <%= f.label :notes, "Notes (optionnel)", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <%= f.text_area :notes, rows: 2,
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
   </div>
 
   <div>
-    <%= f.label :notes, "Notes (optionnel)", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_area :notes, rows: 2, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-  </div>
-
-  <div>
-    <%= f.label :reminder_lead_minutes, "Rappel avant le rdv (minutes, optionnel)", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.number_field :reminder_lead_minutes, min: 1, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-    <p class="text-xs text-gray-400 mt-1">Par défaut : <%= Setting.instance.default_appointment_lead_minutes %> min avant.</p>
+    <%= f.label :reminder_lead_minutes, "Rappel avant le rdv (minutes, optionnel)", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+    <%= f.number_field :reminder_lead_minutes, min: 1, placeholder: Setting.instance.default_appointment_lead_minutes,
+          class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
+    <p class="text-xs text-dim mt-1.5">Par défaut : <%= Setting.instance.default_appointment_lead_minutes %> min avant.</p>
   </div>
 
   <div class="flex items-center gap-3 pt-2">
-    <%= f.submit class: "px-4 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
-    <%= link_to "Annuler", request.referer || appointments_path, class: "text-sm text-gray-500 hover:underline" %>
+    <%= f.submit (appointment.persisted? ? "Enregistrer" : "Ajouter au ruban"),
+          class: "flex-1 py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>
     <% if appointment.persisted? %>
       <%= button_to "Supprimer", appointment_path(appointment), method: :delete,
-            class: "text-sm text-red-600 hover:underline bg-transparent border-0 p-0",
-            form: { class: "ml-auto", data: { turbo_confirm: "Supprimer ce rendez-vous ?" } } %>
+            class: "text-[13px] text-red-600 bg-transparent border-0 p-2",
+            form: { data: { turbo_confirm: "Supprimer ce rendez-vous ?", turbo_frame: "_top" } } %>
     <% end %>
   </div>
 <% end %>

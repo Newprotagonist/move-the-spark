@@ -1,25 +1,28 @@
 <% content_for :title, "Rendez-vous à venir — Planner" %>
 
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-lg font-semibold">Rendez-vous à venir</h1>
-  <%= link_to "+ Rendez-vous", new_appointment_path, class: "text-sm px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700" %>
-</div>
+<%= render "shared/screen_header", kicker: "à venir", title: "Rendez-vous" %>
 
-<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
-  <% if @appointments.empty? %>
-    <p class="p-4 text-sm text-gray-400">Aucun rendez-vous à venir.</p>
-  <% else %>
-    <% @appointments.each do |appointment| %>
-      <div class="flex items-center gap-3 px-4 py-3">
-        <div class="flex-1 min-w-0">
-          <p class="font-medium truncate"><%= appointment.title %></p>
-          <p class="text-sm text-gray-500">
-            <%= l(appointment.starts_at, format: :long) %>
-            <%= "· #{appointment.location}" if appointment.location.present? %>
-          </p>
+<%= link_to "+ Nouveau rendez-vous", new_appointment_path, data: { turbo_frame: "sheet" },
+      class: "block text-center py-3.5 rounded-2xl bg-ink text-paper text-[13.5px] font-semibold mb-5" %>
+
+<% if @appointments.empty? %>
+  <p class="text-sm text-dim">Aucun rendez-vous à venir.</p>
+<% else %>
+  <div class="space-y-6">
+    <% @appointments.group_by { |a| a.starts_at.to_date }.each do |date, appointments_on_date| %>
+      <div>
+        <div class="flex items-baseline gap-2 mb-2">
+          <span class="font-serif-display text-xl"><%= l(date, format: :long) %></span>
+          <span class="font-mono text-[10.5px] text-dim uppercase tracking-[.1em]"><%= relative_day_label(date) %></span>
         </div>
-        <%= link_to "Modifier", edit_appointment_path(appointment), class: "text-xs text-gray-400 hover:text-gray-600 shrink-0" %>
+        <div class="bg-paper rounded-[20px] border border-line divide-y divide-line">
+          <% appointments_on_date.each do |appointment| %>
+            <div class="px-4">
+              <%= render "appointments/appointment", appointment: appointment %>
+            </div>
+          <% end %>
+        </div>
       </div>
     <% end %>
-  <% end %>
-</section>
+  </div>
+<% end %>

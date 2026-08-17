@@ -32,5 +32,7 @@ Rails.application.routes.draw do
 
   resource :settings, only: [ :edit, :update ], controller: "settings"
 
+  get "moi", to: "profiles#show", as: :profile
+
   resource :push_subscription, only: [ :create, :destroy ]
 end

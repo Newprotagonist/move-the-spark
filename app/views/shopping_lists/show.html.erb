@@ -1,13 +1,12 @@
 <% content_for :title, "#{@shopping_list.name} — Planner" %>
 
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-lg font-semibold"><%= @shopping_list.name %></h1>
-  <div class="flex items-center gap-3">
-    <%= link_to "Renommer", edit_shopping_list_path(@shopping_list), class: "text-xs text-gray-400 hover:text-gray-600" %>
-    <%= button_to "Supprimer la liste", shopping_list_path(@shopping_list), method: :delete,
-          class: "text-xs text-red-600 bg-transparent border-0 p-0",
-          form: { data: { turbo_confirm: "Supprimer cette liste et tous ses articles ?" } } %>
-  </div>
+<%= render "shared/screen_header", kicker: "courses", title: @shopping_list.name %>
+
+<div class="flex items-center gap-4 mb-4">
+  <%= link_to "Renommer", edit_shopping_list_path(@shopping_list), class: "font-mono text-[10.5px] text-dim" %>
+  <%= button_to "Supprimer la liste", shopping_list_path(@shopping_list), method: :delete,
+        class: "font-mono text-[10.5px] text-red-600 bg-transparent border-0 p-0",
+        form: { data: { turbo_confirm: "Supprimer cette liste et tous ses articles ?" } } %>
 </div>
 
 <%= render "items", shopping_list: @shopping_list %>
@@ -15,9 +14,9 @@
 <%= form_with model: @shopping_list_item, url: shopping_list_shopping_list_items_path(@shopping_list), class: "flex gap-2",
       data: { controller: "reset-form" } do |f| %>
   <%= f.text_field :name, placeholder: "Ajouter un article…", required: true, autofocus: true,
-        class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500",
+        class: "flex-1 box-border rounded-2xl border border-line bg-paper px-3.5 py-2.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-accent",
         data: { "reset-form-target": "field" } %>
-  <%= f.submit "Ajouter", class: "px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
+  <%= f.submit "Ajouter", class: "px-4 py-2.5 rounded-2xl bg-ink text-paper text-sm font-semibold" %>
 <% end %>
 
-<%= link_to "← Toutes les listes", shopping_lists_path, class: "block mt-6 text-sm text-indigo-600 hover:underline" %>
+<%= link_to "← Toutes les listes", shopping_lists_path, class: "block mt-6 mb-4 text-sm text-accent font-medium" %>

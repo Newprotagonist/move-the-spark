@@ -1,18 +1,18 @@
 <% content_for :title, "Listes de courses — Planner" %>
 
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-lg font-semibold">Listes de courses</h1>
-  <%= link_to "+ Liste", new_shopping_list_path, class: "text-sm px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700" %>
-</div>
+<%= render "shared/screen_header", kicker: "courses", title: "Listes" %>
 
-<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
+<%= link_to "+ Liste", new_shopping_list_path,
+      class: "block text-center py-3.5 rounded-2xl bg-ink text-paper text-[13.5px] font-semibold mb-5" %>
+
+<section class="bg-paper rounded-[20px] border border-line divide-y divide-line">
   <% if @shopping_lists.empty? %>
-    <p class="p-4 text-sm text-gray-400">Aucune liste pour l'instant.</p>
+    <p class="p-4 text-sm text-dim">Aucune liste pour l'instant.</p>
   <% else %>
     <% @shopping_lists.each do |list| %>
-      <div class="flex items-center justify-between px-4 py-3">
-        <%= link_to list.name, shopping_list_path(list), class: "font-medium hover:underline" %>
-        <span class="text-xs text-gray-400">
+      <div class="flex items-center justify-between px-4 py-3.5">
+        <%= link_to list.name, shopping_list_path(list), class: "text-[14.5px] font-semibold" %>
+        <span class="font-mono text-[10.5px] text-dim">
           <%= list.shopping_list_items.count %> article<%= "s" if list.shopping_list_items.count != 1 %>
         </span>
       </div>

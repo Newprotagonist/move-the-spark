@@ -24,7 +24,7 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "body", text: /Weekly review/
-    assert_select "body", text: /Cette semaine/
+    assert_select "body", text: /cette semaine/i
   end
 
   test "navigates to a specific date via the date param" do

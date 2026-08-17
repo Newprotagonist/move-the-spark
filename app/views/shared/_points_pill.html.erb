@@ -1,0 +1,6 @@
+<%= link_to profile_path, id: "gamification-summary",
+      class: "shrink-0 flex items-center gap-2 px-3 py-2 rounded-full bg-ink text-paper font-mono text-xs min-h-9" do %>
+  <span>⭐ <%= @total_points %></span>
+  <span class="w-px h-3 bg-white/25"></span>
+  <span>🔥 <%= @daily_streak %></span>
+<% end %>

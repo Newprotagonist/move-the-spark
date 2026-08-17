@@ -13,7 +13,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   test "updates the settings" do
     patch settings_path, params: { setting: { points_per_goal: 5, default_appointment_lead_minutes: 15, daily_goal_reminder_time: "19:30" } }
 
-    assert_redirected_to edit_settings_path
+    assert_redirected_to profile_path
     setting = Setting.instance
     assert_equal 5, setting.points_per_goal
     assert_equal 15, setting.default_appointment_lead_minutes

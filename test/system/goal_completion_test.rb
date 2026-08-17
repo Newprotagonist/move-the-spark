@@ -6,7 +6,7 @@ class GoalCompletionTest < ApplicationSystemTestCase
 
     click_on "+ Objectif récurrent"
     fill_in "Titre", with: "Lire 20 minutes"
-    choose "Récurrent"
+    choose "Récurrent", allow_label_click: true
     select "Chaque jour", from: "Fréquence"
     click_on "Créer"
 
