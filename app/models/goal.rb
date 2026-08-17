@@ -7,6 +7,7 @@ class Goal < ApplicationRecord
 
   validates :title, presence: true
   validates :frequency, inclusion: { in: FREQUENCIES }
+  validates :scheduled_hour, inclusion: { in: 0..23 }, allow_nil: true
   validates :active_from, presence: true, if: :recurring?
   validates :scheduled_on, presence: true, unless: :recurring?
   validate :recurring_goals_have_no_scheduled_on

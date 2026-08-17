@@ -73,6 +73,18 @@
     </div>
   </div>
 
+  <label class="flex items-center justify-between gap-4 px-4 py-3.5 rounded-2xl bg-paper border border-line cursor-pointer">
+    <div>
+      <div class="text-[13.5px] font-semibold">Chronométrer</div>
+      <div class="text-[11.5px] text-dim mt-0.5">Suivre la durée pour comparer aux moyennes</div>
+    </div>
+    <div class="relative shrink-0 w-[46px] h-7">
+      <%= f.check_box :timed, class: "peer sr-only" %>
+      <span class="absolute inset-0 rounded-full bg-line peer-checked:bg-success transition-colors pointer-events-none"></span>
+      <span class="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-[18px] pointer-events-none"></span>
+    </div>
+  </label>
+
   <div class="flex items-center gap-3 pt-2">
     <%= f.submit (goal.persisted? ? "Enregistrer" : "Créer l’objectif"),
           class: "flex-1 py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>

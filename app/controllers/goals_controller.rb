@@ -94,8 +94,11 @@ class GoalsController < ApplicationController
   # ones are only hidden via CSS, not removed from the DOM), so the fields
   # that don't apply to the chosen type are cleared here rather than trusted
   # from the client.
+  # scheduled_hour is deliberately not permitted here — it's only ever set
+  # via #schedule, so editing a goal's title etc. can't accidentally clobber
+  # its planned time slot.
   def goal_params
-    permitted = params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from)
+    permitted = params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from, :timed)
     if ActiveModel::Type::Boolean.new.cast(permitted[:recurring])
       permitted[:scheduled_on] = nil
     else
