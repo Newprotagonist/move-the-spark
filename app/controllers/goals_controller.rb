@@ -120,7 +120,18 @@ class GoalsController < ApplicationController
     respond_to do |resp_format|
       resp_format.html { redirect_to day_path(date: date) }
       resp_format.turbo_stream do
-        streams = [ turbo_stream.replace("day-ribbon", partial: "days/ribbon") ]
+        reference_date = @goal.occurrence_date(date)
+        streams = [
+          turbo_stream.replace("day-ribbon", partial: "days/ribbon"),
+          # The checklist row (rendered separately from the ribbon) shows its
+          # own "HH:00" badge once scheduled — without this it stays stale,
+          # showing no time, until the next full page load.
+          turbo_stream.replace(
+            helpers.dom_id(@goal, reference_date.to_s),
+            partial: "goals/goal",
+            locals: { goal: @goal, reference_date: reference_date, completion: @completions[[ @goal.id, reference_date ]] }
+          )
+        ]
         streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: "Casé à #{hour_label}" }) if hour_label
         render turbo_stream: streams
       end

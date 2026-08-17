@@ -266,6 +266,24 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_nil goal.reload.scheduled_hour
   end
 
+  test "schedule also replaces the checklist row so its HH:00 badge appears immediately" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    patch schedule_goal_path(goal), params: { hour: 9, date: "2026-08-17" }, as: :turbo_stream
+
+    assert_match "turbo-stream action=\"replace\" target=\"2026-08-17_goal_#{goal.id}\"", response.body
+    assert_match "09:00", response.body
+  end
+
+  test "schedule replaces the checklist row for a weekly goal at its week's occurrence, not the viewed day" do
+    goal = Goal.create!(title: "Weekly habit", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
+    wednesday = Date.new(2026, 8, 19) # week of 2026-08-17 (Mon)
+
+    patch schedule_goal_path(goal), params: { hour: 9, date: wednesday.to_s }, as: :turbo_stream
+
+    assert_match "turbo-stream action=\"replace\" target=\"2026-08-17_goal_#{goal.id}\"", response.body
+  end
+
   test "schedule responds with a turbo stream replacing the day ribbon" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
