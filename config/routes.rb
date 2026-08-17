@@ -31,4 +31,6 @@ Rails.application.routes.draw do
   resources :shopping_list_items, only: [ :update, :destroy ]
 
   resource :settings, only: [ :edit, :update ], controller: "settings"
+
+  resource :push_subscription, only: [ :create, :destroy ]
 end

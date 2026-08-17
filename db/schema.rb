@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_114406) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_17_115051) do
   create_table "appointments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "location"
@@ -51,6 +51,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_114406) do
     t.index ["archived_at"], name: "index_goals_on_archived_at"
     t.index ["scheduled_on"], name: "index_goals_on_scheduled_on"
     t.index ["title"], name: "index_goals_on_title"
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "auth_key", null: false
+    t.datetime "created_at", null: false
+    t.string "endpoint", null: false
+    t.string "p256dh_key", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
   end
 
   create_table "settings", force: :cascade do |t|

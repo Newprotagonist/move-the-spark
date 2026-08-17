@@ -65,4 +65,8 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # Minitest 6 dropped minitest/mock (Object#stub, Minitest::Mock); pin to the
+  # last 5.x series so job/model tests can stub Webpush.payload_send.
+  gem "minitest", "~> 5.25"
 end
