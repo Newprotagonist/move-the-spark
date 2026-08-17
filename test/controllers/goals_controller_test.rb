@@ -142,6 +142,49 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "focus starts the timer if it isn't already running" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      get focus_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    assert_response :success
+    assert_equal Time.zone.local(2026, 8, 17, 10, 0, 0), goal.reload.current_timer_started_at
+  end
+
+  test "focus does not restart an already-running timer" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 5, 0) do
+      get focus_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    assert_equal Time.zone.local(2026, 8, 17, 10, 0, 0), goal.reload.current_timer_started_at
+  end
+
+  test "cancel_timer clears the running timer without completing the goal" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    assert_no_difference("GoalCompletion.count") do
+      post cancel_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    assert_not goal.reload.timer_running?
+  end
+
+  test "cancel_timer redirects to return_to when given (focus page has no in-place target)" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    post cancel_timer_goal_path(goal), params: { occurred_on: "2026-08-17", return_to: day_path(date: "2026-08-17") }
+
+    assert_redirected_to day_path(date: "2026-08-17")
+  end
+
   test "complete responds with a turbo stream replacing the goal row" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 

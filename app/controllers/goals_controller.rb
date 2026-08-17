@@ -1,8 +1,9 @@
 class GoalsController < ApplicationController
   include DayScoped
 
-  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :schedule ]
+  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :cancel_timer, :focus, :schedule ]
   before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
+  before_action -> { @fullscreen = true }, only: [ :focus ]
 
   def new
     @goal = Goal.new(
@@ -86,6 +87,21 @@ class GoalsController < ApplicationController
     respond_to_toggle(occurred_on)
   end
 
+  # Abandons an in-progress timer without completing the goal or recording
+  # any duration ("Fermer sans enregistrer" on the focus screen).
+  def cancel_timer
+    @goal.update!(current_timer_started_at: nil)
+    occurred_on = Date.parse(params[:occurred_on])
+    respond_to_toggle(occurred_on)
+  end
+
+  # Full-screen timer view. Ensures the timer is running (starting it if
+  # this is how the user is beginning the goal) before rendering.
+  def focus
+    @occurred_on = Date.parse(params[:occurred_on])
+    @goal.update!(current_timer_started_at: Time.current) unless @goal.timer_running?
+  end
+
   # Assigns (or clears, if hour is blank) this goal's slot in the day
   # ribbon — a UI-only placement, not tied to any particular occurrence.
   def schedule
@@ -123,8 +139,13 @@ class GoalsController < ApplicationController
     permitted
   end
 
+  # The focus page isn't reachable via Turbo Frame/Stream (it's a real
+  # full-screen page, not an in-place update target), so its "Terminé" /
+  # "Fermer sans enregistrer" forms opt out of Turbo (turbo: false) and rely
+  # on this explicit param — request.referer alone would just point back at
+  # the focus page itself.
   def redirect_target
-    request.referer || root_path
+    params[:return_to].presence || request.referer || root_path
   end
 
   def respond_to_toggle(occurred_on)

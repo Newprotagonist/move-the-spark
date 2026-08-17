@@ -30,11 +30,11 @@
   </head>
 
   <body class="bg-bg text-ink font-sans min-h-screen">
-    <% if @sheet %>
-      <%# This page IS a sheet form (goal/appointment/settings new or edit) — its own
-          view provides the "sheet" turbo-frame directly (see shared/_sheet_shell),
-          because Turbo Rails renders frame-scoped requests through a bare layout
-          that skips this file entirely, so the frame can't live here. %>
+    <% if @sheet || @fullscreen %>
+      <%# Sheet forms and the full-screen focus overlay provide their own root
+          element directly (see shared/_sheet_shell for why sheets have to:
+          Turbo Rails renders frame-scoped requests through a bare layout that
+          skips this file entirely, so the frame can't live here). %>
       <%= yield %>
     <% else %>
       <main class="max-w-[520px] mx-auto px-4 pb-28">
@@ -54,31 +54,33 @@
       <%= turbo_frame_tag "sheet", class: "fixed inset-0 z-40 empty:hidden empty:pointer-events-none", data: { controller: "sheet" } %>
     <% end %>
 
-    <nav class="fixed bottom-0 inset-x-0 z-30 flex gap-0.5 px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-2
-                bg-[oklch(0.985_0.006_84)] border-t border-line">
-      <div class="max-w-[520px] mx-auto w-full flex gap-0.5">
-        <%= link_to root_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("days") ? "bg-bg text-ink" : "text-faint"}" do %>
-          <span class="block w-[15px] h-[15px] rounded-full border-2 border-current"></span>
-          <span class="text-[10px] font-semibold">Jour</span>
-        <% end %>
-        <%= link_to current_week_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("weeks") ? "bg-bg text-ink" : "text-faint"}" do %>
-          <span class="block w-[15px] h-[15px] rounded-sm border-2 border-current"></span>
-          <span class="text-[10px] font-semibold">Semaine</span>
-        <% end %>
-        <%= link_to appointments_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("appointments") ? "bg-bg text-ink" : "text-faint"}" do %>
-          <span class="block w-[15px] h-[11px] rounded-sm border-2 border-t-[5px] border-current"></span>
-          <span class="text-[10px] font-semibold">RDV</span>
-        <% end %>
-        <%= link_to shopping_lists_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("shopping_lists", "shopping_list_items") ? "bg-bg text-ink" : "text-faint"}" do %>
-          <span class="block w-[13px] h-[15px] rounded-b-[5px] border-2 border-t-0 border-current"></span>
-          <span class="text-[10px] font-semibold">Courses</span>
-        <% end %>
-        <%= link_to profile_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("profiles", "settings") ? "bg-bg text-ink" : "text-faint"}" do %>
-          <span class="block w-[15px] h-[15px] rounded-full bg-current"></span>
-          <span class="text-[10px] font-semibold">Moi</span>
-        <% end %>
-      </div>
-    </nav>
+    <% unless @fullscreen %>
+      <nav class="fixed bottom-0 inset-x-0 z-30 flex gap-0.5 px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-2
+                  bg-[oklch(0.985_0.006_84)] border-t border-line">
+        <div class="max-w-[520px] mx-auto w-full flex gap-0.5">
+          <%= link_to root_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("days") ? "bg-bg text-ink" : "text-faint"}" do %>
+            <span class="block w-[15px] h-[15px] rounded-full border-2 border-current"></span>
+            <span class="text-[10px] font-semibold">Jour</span>
+          <% end %>
+          <%= link_to current_week_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("weeks") ? "bg-bg text-ink" : "text-faint"}" do %>
+            <span class="block w-[15px] h-[15px] rounded-sm border-2 border-current"></span>
+            <span class="text-[10px] font-semibold">Semaine</span>
+          <% end %>
+          <%= link_to appointments_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("appointments") ? "bg-bg text-ink" : "text-faint"}" do %>
+            <span class="block w-[15px] h-[11px] rounded-sm border-2 border-t-[5px] border-current"></span>
+            <span class="text-[10px] font-semibold">RDV</span>
+          <% end %>
+          <%= link_to shopping_lists_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("shopping_lists", "shopping_list_items") ? "bg-bg text-ink" : "text-faint"}" do %>
+            <span class="block w-[13px] h-[15px] rounded-b-[5px] border-2 border-t-0 border-current"></span>
+            <span class="text-[10px] font-semibold">Courses</span>
+          <% end %>
+          <%= link_to profile_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("profiles", "settings") ? "bg-bg text-ink" : "text-faint"}" do %>
+            <span class="block w-[15px] h-[15px] rounded-full bg-current"></span>
+            <span class="text-[10px] font-semibold">Moi</span>
+          <% end %>
+        </div>
+      </nav>
+    <% end %>
 
     <%# Toast notifications get turbo_stream-appended here. %>
     <div id="toasts" class="fixed inset-x-0 top-8 z-50 flex justify-center pointer-events-none"></div>

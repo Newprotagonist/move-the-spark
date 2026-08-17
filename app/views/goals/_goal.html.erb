@@ -33,8 +33,11 @@
     </div>
 
     <% if goal.timer_running? %>
-      <span data-controller="timer" data-timer-started-at-value="<%= goal.current_timer_started_at.iso8601 %>"
-            data-timer-target="display" class="font-mono text-xs text-dim tabular-nums shrink-0">00:00</span>
+      <%= link_to focus_goal_path(goal, occurred_on: reference_date), "aria-label": "Reprendre le focus",
+            data: { turbo_frame: "_top" }, class: "font-mono text-xs text-dim tabular-nums shrink-0 px-1" do %>
+        <span data-controller="timer" data-timer-started-at-value="<%= goal.current_timer_started_at.iso8601 %>"
+              data-timer-target="display">00:00</span>
+      <% end %>
       <%= button_to "⏹", stop_timer_goal_path(goal),
             method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-red-600",
             "aria-label": "Arrêter le chrono",
@@ -49,10 +52,8 @@
         </button>
       <% end %>
       <% if goal.timed? %>
-        <%= button_to "▶", start_timer_goal_path(goal),
-              method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-faint",
-              "aria-label": "Démarrer le chrono",
-              form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
+        <%= link_to focus_goal_path(goal, occurred_on: reference_date), "aria-label": "Démarrer le focus",
+              data: { turbo_frame: "_top" }, class: "shrink-0 p-2.5 text-faint" do %>▶<% end %>
       <% end %>
     <% end %>
 
