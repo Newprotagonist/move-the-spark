@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_112211) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_17_112942) do
   create_table "goal_completions", force: :cascade do |t|
     t.datetime "completed_at", null: false
     t.datetime "created_at", null: false
@@ -39,6 +39,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_112211) do
     t.index ["archived_at"], name: "index_goals_on_archived_at"
     t.index ["scheduled_on"], name: "index_goals_on_scheduled_on"
     t.index ["title"], name: "index_goals_on_title"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "daily_goal_reminder_sent_on"
+    t.time "daily_goal_reminder_time", default: "2000-01-01 18:00:00", null: false
+    t.integer "default_appointment_lead_minutes", default: 30, null: false
+    t.integer "points_per_goal", default: 10, null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "goal_completions", "goals"

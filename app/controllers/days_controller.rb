@@ -7,6 +7,8 @@ class DaysController < ApplicationController
     @daily_goals = Goal.due_on(@date)
     @weekly_goals = Goal.due_in_week(@date)
     @completions = completions_for(@daily_goals + @weekly_goals)
+
+    @today_progress = StreakCalculator.new(unit: :day, reference_date: @date).current_period_progress if @date == Date.current
   end
 
   private

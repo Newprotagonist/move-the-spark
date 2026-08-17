@@ -1,0 +1,2 @@
+# Empty on purpose — Setting is a singleton accessed via Setting.instance,
+# which lazily creates its row; tests don't rely on a fixture row existing.

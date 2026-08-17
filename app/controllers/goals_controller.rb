@@ -38,7 +38,7 @@ class GoalsController < ApplicationController
     occurred_on = Date.parse(params[:occurred_on])
     @goal.goal_completions.find_or_create_by!(occurred_on: occurred_on) do |completion|
       completion.completed_at = Time.current
-      completion.points_awarded = 0
+      completion.points_awarded = Setting.instance.points_per_goal
     end
 
     respond_to_toggle(occurred_on)
@@ -69,12 +69,16 @@ class GoalsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to redirect_target }
       format.turbo_stream do
+        load_gamification_summary # points/streak may have changed, refresh after the toggle
         completion = @goal.goal_completions.find_by(occurred_on: occurred_on)
-        render turbo_stream: turbo_stream.replace(
-          helpers.dom_id(@goal, occurred_on.to_s),
-          partial: "goals/goal",
-          locals: { goal: @goal, reference_date: occurred_on, completion: completion }
-        )
+        render turbo_stream: [
+          turbo_stream.replace(
+            helpers.dom_id(@goal, occurred_on.to_s),
+            partial: "goals/goal",
+            locals: { goal: @goal, reference_date: occurred_on, completion: completion }
+          ),
+          turbo_stream.replace("gamification-summary", partial: "shared/gamification_summary")
+        ]
       end
     end
   end

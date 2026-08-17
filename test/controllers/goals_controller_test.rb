@@ -47,6 +47,15 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Date.new(2026, 8, 17), completion.occurred_on
   end
 
+  test "completing a goal awards points_per_goal from Setting" do
+    Setting.instance.update!(points_per_goal: 25)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    assert_equal 25, goal.goal_completions.sole.points_awarded
+  end
+
   test "completing the same occurrence twice does not duplicate" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }

@@ -6,6 +6,12 @@
   <%= link_to "#{l(@next_date, format: :short)} →", day_path(date: @next_date), class: "text-sm text-indigo-600 hover:underline" %>
 </div>
 
+<% if @today_progress %>
+  <p class="text-sm text-gray-500 mb-4">
+    <%= @today_progress[:done] %>/<%= @today_progress[:total] %> objectif<%= "s" if @today_progress[:total] != 1 %> du jour accompli<%= "s" if @today_progress[:done] != 1 %>
+  </p>
+<% end %>
+
 <section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mb-6">
   <h2 class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Objectifs</h2>
 
