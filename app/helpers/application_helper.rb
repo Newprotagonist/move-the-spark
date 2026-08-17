@@ -11,6 +11,20 @@ module ApplicationHelper
     list ? shopping_list_path(list) : shopping_lists_path
   end
 
+  # Level system: an approved deviation from SPEC.md's "no levels in v1" —
+  # see PLAN.md redesign notes. 100 points per level, flat.
+  def level_for_points(points)
+    (points / 100) + 1
+  end
+
+  def level_progress_percent(points)
+    points % 100
+  end
+
+  def points_to_next_level(points)
+    100 - level_progress_percent(points)
+  end
+
   def relative_day_label(date)
     days = (date - Date.current).to_i
     case days
