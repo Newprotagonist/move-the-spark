@@ -19,6 +19,10 @@ endroit unique pour noter ses rendez-vous.
   ou avec tous les objectifs complétés — à trancher en phase de plan).
 - Affichage du total de points et du streak courant sur la vue principale.
 - Pas de niveaux, badges ou récompenses en v1 (prévu comme évolution future).
+  **Mise à jour** : un système de niveaux simple (100 points par niveau, barre de progression)
+  a finalement été ajouté lors de la refonte visuelle "Planner Moderne" importée depuis Claude
+  Design — le design importé l'incluait explicitement, et l'utilisateur a validé cet écart
+  au périmètre initial plutôt que de l'omettre. Toujours pas de badges/récompenses débloquables.
 
 ### 3. Rendez-vous (RDV)
 - Créer un rdv avec titre, date, heure (et lieu/notes optionnels).
