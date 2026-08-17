@@ -1,5 +1,5 @@
 class GoalsController < ApplicationController
-  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete ]
+  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer ]
 
   def new
     @goal = Goal.new(
@@ -47,6 +47,36 @@ class GoalsController < ApplicationController
   def uncomplete
     occurred_on = Date.parse(params[:occurred_on])
     @goal.goal_completions.find_by(occurred_on: occurred_on)&.destroy
+
+    respond_to_toggle(occurred_on)
+  end
+
+  # Starting the timer only records when it started; it does not complete
+  # the goal by itself (per spec, no manual estimate — only the real
+  # elapsed time, captured once the timer is stopped).
+  def start_timer
+    occurred_on = Date.parse(params[:occurred_on])
+    @goal.update!(current_timer_started_at: Time.current) unless @goal.timer_running?
+
+    respond_to_toggle(occurred_on)
+  end
+
+  # Stopping the timer both logs the elapsed duration and completes the
+  # goal for this occurrence (spec: duration is only ever recorded "each
+  # time a timed goal is realized").
+  def stop_timer
+    occurred_on = Date.parse(params[:occurred_on])
+
+    if @goal.timer_running?
+      duration_seconds = (Time.current - @goal.current_timer_started_at).round
+      completion = @goal.goal_completions.find_or_initialize_by(occurred_on: occurred_on)
+      completion.points_awarded = Setting.instance.points_per_goal if completion.new_record?
+      completion.started_at = @goal.current_timer_started_at
+      completion.duration_seconds = duration_seconds
+      completion.completed_at = Time.current
+      completion.save!
+      @goal.update!(current_timer_started_at: nil)
+    end
 
     respond_to_toggle(occurred_on)
   end

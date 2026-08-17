@@ -92,4 +92,12 @@ class GoalTest < ActiveSupport::TestCase
     GoalCompletion.create!(goal: goal, occurred_on: goal.scheduled_on, completed_at: Time.current, duration_seconds: nil)
     assert_nil goal.average_duration_seconds
   end
+
+  test "timer_running? reflects current_timer_started_at" do
+    goal = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    assert_not goal.timer_running?
+
+    goal.update!(current_timer_started_at: Time.current)
+    assert goal.timer_running?
+  end
 end

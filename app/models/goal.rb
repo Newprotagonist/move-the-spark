@@ -47,6 +47,10 @@ class Goal < ApplicationRecord
     archived_at.present?
   end
 
+  def timer_running?
+    current_timer_started_at.present?
+  end
+
   # The GoalCompletion#occurred_on value that represents "this goal, on this
   # occurrence": the exact date for a daily/one-off goal, the week's Monday
   # for a weekly goal.

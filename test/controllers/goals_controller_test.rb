@@ -74,6 +74,58 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "start_timer records the current time and does not complete the goal" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    goal.reload
+    assert goal.timer_running?
+    assert_equal Time.zone.local(2026, 8, 17, 10, 0, 0), goal.current_timer_started_at
+    assert_equal 0, goal.goal_completions.count
+  end
+
+  test "start_timer is a no-op if the timer is already running" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 5, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    assert_equal Time.zone.local(2026, 8, 17, 10, 0, 0), goal.reload.current_timer_started_at
+  end
+
+  test "stop_timer records the duration, completes the goal, and clears the running timer" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    Setting.instance.update!(points_per_goal: 15)
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 25, 0) do
+      post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    goal.reload
+    assert_not goal.timer_running?
+    completion = goal.goal_completions.sole
+    assert_equal 25 * 60, completion.duration_seconds
+    assert_equal 15, completion.points_awarded
+  end
+
+  test "stop_timer without a running timer is a no-op" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    assert_no_difference("GoalCompletion.count") do
+      post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+  end
+
   test "complete responds with a turbo stream replacing the goal row" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 

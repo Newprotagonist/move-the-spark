@@ -16,6 +16,8 @@ Rails.application.routes.draw do
     member do
       post :complete
       post :uncomplete
+      post :start_timer
+      post :stop_timer
     end
   end
 end

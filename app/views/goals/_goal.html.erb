@@ -21,8 +21,23 @@
         <% elsif goal.recurring? %>
           <span class="text-xs uppercase tracking-wide text-gray-400">Chaque jour</span>
         <% end %>
+        <% if goal.recurring? && (avg = goal.average_duration_seconds) %>
+          <span class="text-xs text-gray-400">en moyenne <%= (avg / 60).round %> min</span>
+        <% end %>
       </div>
     </div>
+
+    <% if goal.timer_running? %>
+      <span data-controller="timer" data-timer-started-at-value="<%= goal.current_timer_started_at.iso8601 %>"
+            data-timer-target="display" class="text-xs text-gray-500 tabular-nums shrink-0">00:00</span>
+      <%= button_to "⏹", stop_timer_goal_path(goal),
+            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 text-red-600",
+            form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
+    <% elsif !completion %>
+      <%= button_to "▶", start_timer_goal_path(goal),
+            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 text-gray-400 hover:text-indigo-600",
+            form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
+    <% end %>
 
     <%= link_to "Modifier", edit_goal_path(goal), class: "text-xs text-gray-400 hover:text-gray-600 shrink-0" %>
   </div>
