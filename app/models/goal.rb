@@ -47,6 +47,13 @@ class Goal < ApplicationRecord
     archived_at.present?
   end
 
+  # The GoalCompletion#occurred_on value that represents "this goal, on this
+  # occurrence": the exact date for a daily/one-off goal, the week's Monday
+  # for a weekly goal.
+  def occurrence_date(reference_date)
+    weekly? ? reference_date.beginning_of_week : reference_date
+  end
+
   # Matches by title (not goal_id) per spec: an ad-hoc one-off goal retyped
   # with the same title on different days counts toward the same average as
   # a true recurring goal.

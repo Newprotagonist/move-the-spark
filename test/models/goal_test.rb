@@ -10,7 +10,7 @@ class GoalTest < ActiveSupport::TestCase
   test "one-off goal is invalid without scheduled_on" do
     goal = Goal.new(title: "Buy milk", recurring: false)
     assert_not goal.valid?
-    assert_includes goal.errors[:scheduled_on], "can't be blank"
+    assert_includes goal.errors[:scheduled_on], "doit être rempli"
   end
 
   test "one-off goal cannot be weekly" do
@@ -32,7 +32,7 @@ class GoalTest < ActiveSupport::TestCase
 
     goal.scheduled_on = nil
     assert_not goal.valid?
-    assert_includes goal.errors[:active_from], "can't be blank"
+    assert_includes goal.errors[:active_from], "doit être rempli"
 
     goal.active_from = Date.new(2026, 8, 1)
     assert goal.valid?
@@ -41,7 +41,7 @@ class GoalTest < ActiveSupport::TestCase
   test "recurring goal frequency must be daily or weekly" do
     goal = Goal.new(title: "Run", recurring: true, frequency: "hourly", active_from: Date.new(2026, 8, 1))
     assert_not goal.valid?
-    assert_includes goal.errors[:frequency], "is not included in the list"
+    assert_includes goal.errors[:frequency], "n'est pas une valeur autorisée"
   end
 
   test "due_on returns one-off goals scheduled that day and active recurring daily goals" do

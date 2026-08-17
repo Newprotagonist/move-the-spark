@@ -14,7 +14,7 @@ class GoalCompletionTest < ActiveSupport::TestCase
     GoalCompletion.create!(goal: @goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current)
     dup = GoalCompletion.new(goal: @goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current)
     assert_not dup.valid?
-    assert_includes dup.errors[:occurred_on], "has already been taken"
+    assert_includes dup.errors[:occurred_on], "est déjà utilisé"
   end
 
   test "database enforces the uniqueness constraint too" do
