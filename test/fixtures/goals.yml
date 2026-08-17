@@ -1,0 +1,3 @@
+# Empty on purpose: Goal/GoalCompletion behavior is date-sensitive (streaks,
+# recurrence), so tests build their own records with explicit dates instead
+# of relying on fixtures with implicit "today" values.
