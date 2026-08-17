@@ -1,0 +1,10 @@
+<div class="flex items-center gap-3 py-2" id="<%= dom_id(item) %>">
+  <%= form_with model: item, data: { controller: "auto-submit" } do |f| %>
+    <%= f.check_box :checked, { data: { action: "change->auto-submit#submit" }, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" }, "1", "0" %>
+  <% end %>
+
+  <span class="flex-1 <%= "line-through text-gray-400" if item.checked? %>"><%= item.name %></span>
+
+  <%= button_to "✕", shopping_list_item_path(item), method: :delete,
+        class: "text-xs text-gray-400 hover:text-red-600 bg-transparent border-0 p-0" %>
+</div>

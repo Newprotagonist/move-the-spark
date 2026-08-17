@@ -1,0 +1,30 @@
+<% content_for :title, "#{@shopping_list.name} — Planner" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-lg font-semibold"><%= @shopping_list.name %></h1>
+  <div class="flex items-center gap-3">
+    <%= link_to "Renommer", edit_shopping_list_path(@shopping_list), class: "text-xs text-gray-400 hover:text-gray-600" %>
+    <%= button_to "Supprimer la liste", shopping_list_path(@shopping_list), method: :delete,
+          class: "text-xs text-red-600 bg-transparent border-0 p-0",
+          form: { data: { turbo_confirm: "Supprimer cette liste et tous ses articles ?" } } %>
+  </div>
+</div>
+
+<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mb-6">
+  <% if @shopping_list.shopping_list_items.empty? %>
+    <p class="p-4 text-sm text-gray-400">Liste vide.</p>
+  <% else %>
+    <% @shopping_list.shopping_list_items.each do |item| %>
+      <div class="px-4">
+        <%= render "shopping_list_items/item", item: item %>
+      </div>
+    <% end %>
+  <% end %>
+</section>
+
+<%= form_with model: @shopping_list_item, url: shopping_list_shopping_list_items_path(@shopping_list), class: "flex gap-2" do |f| %>
+  <%= f.text_field :name, placeholder: "Ajouter un article…", class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  <%= f.submit "Ajouter", class: "px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
+<% end %>
+
+<%= link_to "← Toutes les listes", shopping_lists_path, class: "block mt-6 text-sm text-indigo-600 hover:underline" %>

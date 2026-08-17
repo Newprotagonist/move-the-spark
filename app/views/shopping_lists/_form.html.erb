@@ -1,0 +1,22 @@
+<%= form_with model: shopping_list, class: "space-y-4" do |f| %>
+  <% if shopping_list.errors.any? %>
+    <div class="rounded-md bg-red-50 text-red-800 text-sm px-4 py-3">
+      <p class="font-medium mb-1"><%= pluralize(shopping_list.errors.count, "erreur") %> :</p>
+      <ul class="list-disc list-inside">
+        <% shopping_list.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "Nom de la liste", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :name, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit class: "px-4 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
+    <%= link_to "Annuler", request.referer || shopping_lists_path, class: "text-sm text-gray-500 hover:underline" %>
+  </div>
+<% end %>

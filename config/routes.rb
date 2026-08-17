@@ -24,4 +24,9 @@ Rails.application.routes.draw do
   end
 
   resources :appointments, except: [ :show ]
+
+  resources :shopping_lists do
+    resources :shopping_list_items, only: [ :create ]
+  end
+  resources :shopping_list_items, only: [ :update, :destroy ]
 end
