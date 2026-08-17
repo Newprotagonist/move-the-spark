@@ -42,12 +42,13 @@ class GoalsController < ApplicationController
 
   def complete
     occurred_on = Date.parse(params[:occurred_on])
-    @goal.goal_completions.find_or_create_by!(occurred_on: occurred_on) do |completion|
-      completion.completed_at = Time.current
-      completion.points_awarded = Setting.instance.points_per_goal
+    completion = @goal.goal_completions.find_or_create_by!(occurred_on: occurred_on) do |c|
+      c.completed_at = Time.current
+      c.points_awarded = Setting.instance.points_per_goal
     end
 
-    respond_to_toggle(occurred_on)
+    toast = "+#{completion.points_awarded} points" if completion.previously_new_record?
+    respond_to_toggle(occurred_on, toast: toast)
   end
 
   def uncomplete
@@ -73,6 +74,7 @@ class GoalsController < ApplicationController
   def stop_timer
     occurred_on = Date.parse(params[:occurred_on])
 
+    toast = nil
     if @goal.timer_running?
       duration_seconds = (Time.current - @goal.current_timer_started_at).round
       completion = @goal.goal_completions.find_or_initialize_by(occurred_on: occurred_on)
@@ -82,9 +84,14 @@ class GoalsController < ApplicationController
       completion.completed_at = Time.current
       completion.save!
       @goal.update!(current_timer_started_at: nil)
+      # The flash only reaches the user via format.html (the focus page
+      # opts out of Turbo) — guarded so it doesn't leak into the session and
+      # surface later when this is really the checklist's turbo_stream path.
+      flash[:notice] = "+#{completion.points_awarded} points · #{duration_seconds / 60} min" unless request.format.symbol == :turbo_stream
+      toast = "+#{completion.points_awarded} points"
     end
 
-    respond_to_toggle(occurred_on)
+    respond_to_toggle(occurred_on, toast: toast)
   end
 
   # Abandons an in-progress timer without completing the goal or recording
@@ -108,10 +115,15 @@ class GoalsController < ApplicationController
     date = Date.parse(params[:date])
     @goal.update!(scheduled_hour: params[:hour].presence)
     load_day(date)
+    hour_label = "%02d:00" % @goal.scheduled_hour if @goal.scheduled_hour.present?
 
-    respond_to do |format|
-      format.html { redirect_to day_path(date: date) }
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("day-ribbon", partial: "days/ribbon") }
+    respond_to do |resp_format|
+      resp_format.html { redirect_to day_path(date: date) }
+      resp_format.turbo_stream do
+        streams = [ turbo_stream.replace("day-ribbon", partial: "days/ribbon") ]
+        streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: "Casé à #{hour_label}" }) if hour_label
+        render turbo_stream: streams
+      end
     end
   end
 
@@ -148,13 +160,13 @@ class GoalsController < ApplicationController
     params[:return_to].presence || request.referer || root_path
   end
 
-  def respond_to_toggle(occurred_on)
+  def respond_to_toggle(occurred_on, toast: nil)
     respond_to do |format|
       format.html { redirect_to redirect_target }
       format.turbo_stream do
         load_gamification_summary # points/streak may have changed, refresh after the toggle
         completion = @goal.goal_completions.find_by(occurred_on: occurred_on)
-        render turbo_stream: [
+        streams = [
           turbo_stream.replace(
             helpers.dom_id(@goal, occurred_on.to_s),
             partial: "goals/goal",
@@ -162,6 +174,20 @@ class GoalsController < ApplicationController
           ),
           turbo_stream.replace("gamification-summary", partial: "shared/points_pill")
         ]
+        # The day page's progress ring also needs updating — but only safe to
+        # recompute from `occurred_on` for a daily/one-off goal, where it's
+        # exactly the day being viewed. A weekly goal's occurred_on is its
+        # week's Monday, which could be a different day than whatever's
+        # currently on screen, so it's left stale until the next navigation
+        # rather than risk showing the wrong day's numbers.
+        if @goal.daily?
+          load_day(occurred_on)
+          @previous_date = occurred_on - 1
+          @next_date = occurred_on + 1
+          streams << turbo_stream.replace("progress-ring", partial: "days/progress_ring")
+        end
+        streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: toast }) if toast
+        render turbo_stream: streams
       end
     end
   end

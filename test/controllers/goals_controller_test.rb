@@ -194,6 +194,62 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_match "turbo-stream", response.media_type
   end
 
+  test "complete also replaces the day's progress ring for a daily goal" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_match "progress-ring", response.body
+    assert_match "1/1", response.body
+  end
+
+  test "complete does not touch the progress ring for a weekly goal (occurred_on isn't the viewed day)" do
+    goal = Goal.create!(title: "Weekly habit", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_no_match "progress-ring", response.body
+  end
+
+  test "complete appends a points toast only the first time (not on a no-op repeat)" do
+    Setting.instance.update!(points_per_goal: 20)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+    assert_match "+20 points", response.body
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+    assert_no_match "+20 points", response.body
+  end
+
+  test "uncomplete does not append a toast" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    post uncomplete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_no_match "toasts", response.body
+  end
+
+  test "stop_timer via html format sets a flash notice (the focus page's redirect path)" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    assert_match(/points/, flash[:notice])
+  end
+
+  test "stop_timer via turbo_stream format does not leak a flash into the session" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_nil flash[:notice]
+    assert_match "toasts", response.body
+  end
+
   test "schedule sets the goal's hour slot" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
@@ -218,6 +274,22 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "turbo-stream", response.media_type
     assert_match "day-ribbon", response.body
+  end
+
+  test "schedule appends a toast naming the hour when setting a slot" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    patch schedule_goal_path(goal), params: { hour: 14, date: "2026-08-17" }, as: :turbo_stream
+
+    assert_match "Casé à 14:00", response.body
+  end
+
+  test "schedule does not append a toast when clearing a slot" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+
+    patch schedule_goal_path(goal), params: { hour: "", date: "2026-08-17" }, as: :turbo_stream
+
+    assert_no_match "toasts", response.body
   end
 
   test "schedule redirects to the day when requested as html" do

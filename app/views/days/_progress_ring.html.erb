@@ -4,7 +4,7 @@
 <% pct = total.zero? ? 0 : (done * 100 / total) %>
 <% headline = (total.positive? && pct == 100) ? "Journée bouclée" : (pct >= 50 ? "Bien lancé" : "La journée commence") %>
 
-<div class="flex items-center gap-3.5 p-3.5 rounded-[18px] bg-paper border border-line mb-4">
+<div id="progress-ring" class="flex items-center gap-3.5 p-3.5 rounded-[18px] bg-paper border border-line mb-4">
   <div class="relative w-[52px] h-[52px] shrink-0 rounded-full" style="background: conic-gradient(var(--color-accent) <%= pct %>%, var(--color-line) 0)">
     <div class="absolute inset-1.5 rounded-full bg-paper flex items-center justify-center font-mono text-xs"><%= done %>/<%= total %></div>
   </div>
