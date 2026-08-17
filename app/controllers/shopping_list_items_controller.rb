@@ -15,27 +15,30 @@ class ShoppingListItemsController < ApplicationController
   end
 
   # Used both to toggle `checked` (from the list view) and to rename an item.
+  # Replaces the whole items container (not just this row) so the progress
+  # bar/fraction in its header — which depends on every item's checked
+  # state — stays accurate.
   def update
     @shopping_list_item.update(shopping_list_item_params)
+    shopping_list = @shopping_list_item.shopping_list
 
     respond_to do |format|
-      format.html { redirect_to @shopping_list_item.shopping_list }
+      format.html { redirect_to shopping_list }
       format.turbo_stream do
-        render turbo_stream: turbo_stream.replace(
-          helpers.dom_id(@shopping_list_item), partial: "shopping_list_items/item", locals: { item: @shopping_list_item }
-        )
+        render turbo_stream: turbo_stream.replace("shopping_list_items", partial: "shopping_lists/items", locals: { shopping_list: shopping_list })
       end
     end
   end
 
   def destroy
     shopping_list = @shopping_list_item.shopping_list
-    item = @shopping_list_item
-    item.destroy
+    @shopping_list_item.destroy
 
     respond_to do |format|
       format.html { redirect_to shopping_list }
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(helpers.dom_id(item)) }
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace("shopping_list_items", partial: "shopping_lists/items", locals: { shopping_list: shopping_list })
+      end
     end
   end
 

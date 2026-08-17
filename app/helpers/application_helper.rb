@@ -3,6 +3,14 @@ module ApplicationHelper
     controllers.include?(controller_name)
   end
 
+  # The "Courses" tab jumps straight to the most-recently-used list (its own
+  # chip switcher covers the rest) rather than an index-of-lists page, so
+  # there's somewhere useful to land with one tap.
+  def courses_entry_path
+    list = ShoppingList.ordered.first
+    list ? shopping_list_path(list) : shopping_lists_path
+  end
+
   def relative_day_label(date)
     days = (date - Date.current).to_i
     case days

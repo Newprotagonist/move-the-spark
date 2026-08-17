@@ -61,7 +61,7 @@ class ShoppingListsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Pommes", response.body
   end
 
-  test "turbo_stream: checking an item replaces just that item" do
+  test "turbo_stream: checking an item replaces the whole items container so the progress bar stays accurate" do
     list = ShoppingList.create!(name: "Courses hebdo")
     item = list.shopping_list_items.create!(name: "Pommes")
 
@@ -69,15 +69,17 @@ class ShoppingListsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "line-through", response.body
+    assert_match "1/1", response.body
   end
 
-  test "turbo_stream: deleting an item removes it in place" do
+  test "turbo_stream: deleting an item replaces the items container without it" do
     list = ShoppingList.create!(name: "Courses hebdo")
     item = list.shopping_list_items.create!(name: "Pommes")
 
     delete shopping_list_item_path(item), as: :turbo_stream
 
     assert_response :success
-    assert_match "turbo-stream action=\"remove\"", response.body
+    assert_match "turbo-stream action=\"replace\" target=\"shopping_list_items\"", response.body
+    assert_no_match "Pommes", response.body
   end
 end

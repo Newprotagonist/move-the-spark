@@ -7,6 +7,7 @@ class ShoppingListsController < ApplicationController
 
   def show
     @shopping_list_item = ShoppingListItem.new
+    @shopping_lists = ShoppingList.ordered
   end
 
   def new

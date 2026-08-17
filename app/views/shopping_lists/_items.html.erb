@@ -1,11 +1,25 @@
-<section id="shopping_list_items" class="bg-paper rounded-[20px] border border-line divide-y divide-line mb-6">
-  <% if shopping_list.shopping_list_items.empty? %>
-    <p class="p-4 text-sm text-dim">Liste vide.</p>
-  <% else %>
-    <% shopping_list.shopping_list_items.each do |item| %>
-      <div class="px-4">
-        <%= render "shopping_list_items/item", item: item %>
-      </div>
+<% items = shopping_list.shopping_list_items %>
+<% checked_count = items.count(&:checked?) %>
+<% pct = items.empty? ? 0 : (checked_count * 100 / items.size) %>
+
+<section id="shopping_list_items" class="bg-paper rounded-[20px] border border-line overflow-hidden mb-6">
+  <div class="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+    <div class="font-serif-display text-xl"><%= shopping_list.name %></div>
+    <div class="font-mono text-[10.5px] text-dim"><%= checked_count %>/<%= items.size %></div>
+  </div>
+  <div class="h-[3px] bg-line/70">
+    <div class="h-full bg-success transition-[width]" style="width: <%= pct %>%"></div>
+  </div>
+
+  <div class="divide-y divide-line">
+    <% if items.empty? %>
+      <p class="p-4 text-sm text-dim">Liste vide.</p>
+    <% else %>
+      <% items.each do |item| %>
+        <div class="px-4">
+          <%= render "shopping_list_items/item", item: item %>
+        </div>
+      <% end %>
     <% end %>
-  <% end %>
+  </div>
 </section>

@@ -1,12 +1,17 @@
 <% content_for :title, "#{@shopping_list.name} — Planner" %>
 
-<%= render "shared/screen_header", kicker: "courses", title: @shopping_list.name %>
+<%= render "shared/screen_header", kicker: "courses", title: "Listes" %>
 
-<div class="flex items-center gap-4 mb-4">
-  <%= link_to "Renommer", edit_shopping_list_path(@shopping_list), class: "font-mono text-[10.5px] text-dim" %>
-  <%= button_to "Supprimer la liste", shopping_list_path(@shopping_list), method: :delete,
-        class: "font-mono text-[10.5px] text-red-600 bg-transparent border-0 p-0",
-        form: { data: { turbo_confirm: "Supprimer cette liste et tous ses articles ?" } } %>
+<div class="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4">
+  <% @shopping_lists.each do |list| %>
+    <%= link_to shopping_list_path(list),
+          class: "shrink-0 flex items-center gap-2 px-3.5 py-2.5 rounded-full text-[13px] font-semibold min-h-[42px] #{list == @shopping_list ? "bg-ink text-paper" : "border border-line bg-paper"}" do %>
+      <span><%= list.name %></span>
+      <span class="font-mono text-[10.5px] opacity-70"><%= list.shopping_list_items.where(checked: false).count %></span>
+    <% end %>
+  <% end %>
+  <%= link_to "+ liste", new_shopping_list_path,
+        class: "shrink-0 px-3.5 py-2.5 rounded-full border border-dashed border-line text-dim text-[13px] min-h-[42px] flex items-center" %>
 </div>
 
 <%= render "items", shopping_list: @shopping_list %>
@@ -19,4 +24,9 @@
   <%= f.submit "Ajouter", class: "px-4 py-2.5 rounded-2xl bg-ink text-paper text-sm font-semibold" %>
 <% end %>
 
-<%= link_to "← Toutes les listes", shopping_lists_path, class: "block mt-6 mb-4 text-sm text-accent font-medium" %>
+<div class="flex items-center gap-4 mt-6 mb-4">
+  <%= link_to "Renommer", edit_shopping_list_path(@shopping_list), class: "font-mono text-[10.5px] text-dim" %>
+  <%= button_to "Supprimer la liste", shopping_list_path(@shopping_list), method: :delete,
+        class: "font-mono text-[10.5px] text-red-600 bg-transparent border-0 p-0",
+        form: { data: { turbo_confirm: "Supprimer cette liste et tous ses articles ?" } } %>
+</div>
