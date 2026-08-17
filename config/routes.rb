@@ -29,4 +29,6 @@ Rails.application.routes.draw do
     resources :shopping_list_items, only: [ :create ]
   end
   resources :shopping_list_items, only: [ :update, :destroy ]
+
+  resource :settings, only: [ :edit, :update ], controller: "settings"
 end

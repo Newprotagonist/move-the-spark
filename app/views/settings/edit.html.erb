@@ -1,0 +1,35 @@
+<% content_for :title, "Réglages — Planner" %>
+
+<h1 class="text-lg font-semibold mb-4">Réglages</h1>
+
+<%= form_with model: @setting, url: settings_path, method: :patch, class: "space-y-4" do |f| %>
+  <% if @setting.errors.any? %>
+    <div class="rounded-md bg-red-50 text-red-800 text-sm px-4 py-3">
+      <p class="font-medium mb-1"><%= pluralize(@setting.errors.count, "erreur") %> :</p>
+      <ul class="list-disc list-inside">
+        <% @setting.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :points_per_goal, "Points par objectif accompli", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.number_field :points_per_goal, min: 1, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  </div>
+
+  <div>
+    <%= f.label :default_appointment_lead_minutes, "Rappel par défaut avant un rdv (minutes)", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.number_field :default_appointment_lead_minutes, min: 1, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  </div>
+
+  <div>
+    <%= f.label :daily_goal_reminder_time, "Heure du rappel quotidien pour les objectifs non faits", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.time_field :daily_goal_reminder_time, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  </div>
+
+  <div class="pt-2">
+    <%= f.submit class: "px-4 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
+  </div>
+<% end %>
