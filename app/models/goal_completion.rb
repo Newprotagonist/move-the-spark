@@ -8,4 +8,15 @@ class GoalCompletion < ApplicationRecord
   validates :occurred_on, presence: true, uniqueness: { scope: :goal_id }
   validates :completed_at, presence: true
   validates :points_awarded, numericality: { greater_than_or_equal_to: 0 }
+
+  # Bulk-loads completions for a set of (goal_id, occurred_on) pairs and
+  # indexes them by that same pair, so a view can look up
+  # `completions[[goal.id, occurrence_date]]` in O(1) instead of N+1 queries.
+  def self.index_for(pairs)
+    return {} if pairs.empty?
+
+    where(goal_id: pairs.map(&:first).uniq)
+      .index_by { |completion| [ completion.goal_id, completion.occurred_on ] }
+      .slice(*pairs)
+  end
 end

@@ -15,4 +15,10 @@ class ApplicationController < ActionController::Base
     @total_points = GoalCompletion.sum(:points_awarded)
     @daily_streak = StreakCalculator.new(unit: :day).current_streak
   end
+
+  def parse_date(value)
+    Date.parse(value) if value.present?
+  rescue ArgumentError
+    nil
+  end
 end

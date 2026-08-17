@@ -1,0 +1,55 @@
+<% content_for :title, "Planner — semaine du #{l(@week_start, format: :short)}" %>
+
+<div class="flex items-center justify-between mb-6">
+  <%= link_to "← semaine préc.", week_path(date: @previous_week_start), class: "text-sm text-indigo-600 hover:underline" %>
+  <h1 class="text-lg font-semibold">
+    Semaine du <%= l(@week_start, format: :short) %> au <%= l(@week_end, format: :short) %>
+  </h1>
+  <%= link_to "semaine suiv. →", week_path(date: @next_week_start), class: "text-sm text-indigo-600 hover:underline" %>
+</div>
+
+<p class="text-sm text-gray-500 mb-4">
+  🔥 <%= @weekly_streak %> semaine<%= "s" if @weekly_streak != 1 %> de suite
+  <% if @week_progress %>
+    · <%= @week_progress[:done] %>/<%= @week_progress[:total] %> objectif<%= "s" if @week_progress[:total] != 1 %> de la semaine accompli<%= "s" if @week_progress[:done] != 1 %>
+  <% end %>
+</p>
+
+<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mb-6">
+  <h2 class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Objectifs de la semaine</h2>
+
+  <% if @weekly_goals.empty? %>
+    <p class="px-4 pb-4 text-sm text-gray-400">Aucun objectif hebdomadaire.</p>
+  <% else %>
+    <% @weekly_goals.each do |goal| %>
+      <div class="px-4">
+        <%= render "goals/goal", goal: goal, reference_date: @week_start, completion: @completions[[ goal.id, @week_start ]] %>
+      </div>
+    <% end %>
+  <% end %>
+</section>
+
+<div class="space-y-4">
+  <% @days.each do |day| %>
+    <section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
+      <h2 class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <%= link_to l(day[:date], format: :long).capitalize, day_path(date: day[:date]), class: "hover:underline" %>
+        <%= "· aujourd'hui" if day[:date] == Date.current %>
+      </h2>
+
+      <% if day[:goals].empty? %>
+        <p class="px-4 pb-3 text-sm text-gray-400">Aucun objectif.</p>
+      <% else %>
+        <% day[:goals].each do |goal| %>
+          <div class="px-4">
+            <%= render "goals/goal", goal: goal, reference_date: day[:date], completion: @completions[[ goal.id, day[:date] ] ] %>
+          </div>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+</div>
+
+<div class="flex gap-3 mt-6">
+  <%= link_to "+ Objectif récurrent hebdomadaire", new_goal_path(recurring: true, frequency: "weekly"), class: "text-sm px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700" %>
+</div>

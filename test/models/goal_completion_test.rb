@@ -30,4 +30,26 @@ class GoalCompletionTest < ActiveSupport::TestCase
     other = GoalCompletion.new(goal: @goal, occurred_on: Date.new(2026, 8, 18), completed_at: Time.current)
     assert other.valid?
   end
+
+  test "index_for bulk-loads and indexes completions by [goal_id, occurred_on], ignoring unrequested pairs" do
+    other_goal = Goal.create!(title: "Other", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    c1 = GoalCompletion.create!(goal: @goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current)
+    GoalCompletion.create!(goal: @goal, occurred_on: Date.new(2026, 8, 18), completed_at: Time.current)
+    c3 = GoalCompletion.create!(goal: other_goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current)
+
+    result = GoalCompletion.index_for([
+      [ @goal.id, Date.new(2026, 8, 17) ],
+      [ other_goal.id, Date.new(2026, 8, 17) ],
+      [ @goal.id, Date.new(2026, 8, 19) ] # no completion exists for this pair
+    ])
+
+    assert_equal({
+      [ @goal.id, Date.new(2026, 8, 17) ] => c1,
+      [ other_goal.id, Date.new(2026, 8, 17) ] => c3
+    }, result)
+  end
+
+  test "index_for returns an empty hash for no pairs" do
+    assert_equal({}, GoalCompletion.index_for([]))
+  end
 end

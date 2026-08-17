@@ -11,6 +11,8 @@ Rails.application.routes.draw do
 
   root "days#show"
   get "days/:date", to: "days#show", as: :day, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
+  get "weeks", to: "weeks#show", as: :current_week
+  get "weeks/:date", to: "weeks#show", as: :week, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
 
   resources :goals, except: [ :index, :show ] do
     member do
