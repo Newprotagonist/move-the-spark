@@ -6,7 +6,7 @@ class WeeksController < ApplicationController
     @next_week_start = @week_start + 7
 
     @weekly_goals = Goal.due_in_week(@week_start)
-    @days = (@week_start..@week_end).map { |date| { date: date, goals: Goal.due_on(date) } }
+    @days = (@week_start..@week_end).map { |date| { date: date, goals: Goal.due_on(date), appointments: Appointment.on_date(date) } }
 
     pairs = @weekly_goals.map { |goal| [ goal.id, @week_start ] } +
       @days.flat_map { |day| day[:goals].map { |goal| [ goal.id, day[:date] ] } }

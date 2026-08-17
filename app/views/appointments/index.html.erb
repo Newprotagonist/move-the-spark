@@ -1,0 +1,25 @@
+<% content_for :title, "Rendez-vous à venir — Planner" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-lg font-semibold">Rendez-vous à venir</h1>
+  <%= link_to "+ Rendez-vous", new_appointment_path, class: "text-sm px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700" %>
+</div>
+
+<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
+  <% if @appointments.empty? %>
+    <p class="p-4 text-sm text-gray-400">Aucun rendez-vous à venir.</p>
+  <% else %>
+    <% @appointments.each do |appointment| %>
+      <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex-1 min-w-0">
+          <p class="font-medium truncate"><%= appointment.title %></p>
+          <p class="text-sm text-gray-500">
+            <%= l(appointment.starts_at, format: :long) %>
+            <%= "· #{appointment.location}" if appointment.location.present? %>
+          </p>
+        </div>
+        <%= link_to "Modifier", edit_appointment_path(appointment), class: "text-xs text-gray-400 hover:text-gray-600 shrink-0" %>
+      </div>
+    <% end %>
+  <% end %>
+</section>

@@ -22,4 +22,6 @@ Rails.application.routes.draw do
       post :stop_timer
     end
   end
+
+  resources :appointments, except: [ :show ]
 end

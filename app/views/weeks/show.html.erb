@@ -37,12 +37,17 @@
         <%= "· aujourd'hui" if day[:date] == Date.current %>
       </h2>
 
-      <% if day[:goals].empty? %>
-        <p class="px-4 pb-3 text-sm text-gray-400">Aucun objectif.</p>
+      <% if day[:goals].empty? && day[:appointments].empty? %>
+        <p class="px-4 pb-3 text-sm text-gray-400">Rien de prévu.</p>
       <% else %>
         <% day[:goals].each do |goal| %>
           <div class="px-4">
             <%= render "goals/goal", goal: goal, reference_date: day[:date], completion: @completions[[ goal.id, day[:date] ] ] %>
+          </div>
+        <% end %>
+        <% day[:appointments].each do |appointment| %>
+          <div class="px-4">
+            <%= render "appointments/appointment", appointment: appointment %>
           </div>
         <% end %>
       <% end %>

@@ -34,6 +34,18 @@ class WeeksControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Weekly review/
   end
 
+  test "shows appointments within each day of the week" do
+    monday = Date.new(2026, 8, 17)
+    Appointment.create!(title: "Dentiste", starts_at: Time.zone.local(2026, 8, 19, 14, 30))
+    Appointment.create!(title: "Next week rdv", starts_at: Time.zone.local(2026, 8, 24, 9, 0))
+
+    get week_path(date: monday)
+
+    assert_response :success
+    assert_select "body", text: /Dentiste/
+    assert_select "body", text: /Next week rdv/, count: 0
+  end
+
   test "completing a weekly goal from the week view works" do
     monday = Date.new(2026, 8, 17)
     goal = Goal.create!(title: "Weekly review", recurring: true, frequency: "weekly", active_from: monday - 7)

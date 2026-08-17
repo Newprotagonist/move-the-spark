@@ -10,7 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_112942) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_17_114111) do
+  create_table "appointments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "location"
+    t.text "notes"
+    t.integer "reminder_lead_minutes"
+    t.datetime "reminder_sent_at"
+    t.datetime "starts_at", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["starts_at"], name: "index_appointments_on_starts_at"
+  end
+
   create_table "goal_completions", force: :cascade do |t|
     t.datetime "completed_at", null: false
     t.datetime "created_at", null: false

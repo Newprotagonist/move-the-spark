@@ -35,4 +35,17 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "body", text: /Old one-off/
   end
+
+  test "shows appointments for the day alongside goals in the same combined view" do
+    Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    Appointment.create!(title: "Dentiste", starts_at: Time.zone.local(2026, 8, 17, 14, 30))
+    Appointment.create!(title: "Other day rdv", starts_at: Time.zone.local(2026, 8, 18, 9, 0))
+
+    get day_path(date: "2026-08-17")
+
+    assert_response :success
+    assert_select "body", text: /Daily habit/
+    assert_select "body", text: /Dentiste/
+    assert_select "body", text: /Other day rdv/, count: 0
+  end
 end
