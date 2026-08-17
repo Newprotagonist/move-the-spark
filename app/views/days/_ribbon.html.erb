@@ -1,0 +1,45 @@
+<div id="day-ribbon">
+  <div class="flex items-baseline justify-between mb-2.5">
+    <div class="font-mono text-[10px] tracking-[.16em] uppercase text-dim">Le ruban</div>
+    <%= link_to "+ rendez-vous", new_appointment_path(date: @date), data: { turbo_frame: "sheet" },
+          class: "text-[12px] font-semibold text-accent p-1.5" %>
+  </div>
+
+  <div class="rounded-[20px] bg-paper border border-line px-3.5 pt-1.5 pb-3.5">
+    <% DayRibbon.new(goals: @daily_goals + @weekly_goals, appointments: @appointments).hours.each do |hour_slot| %>
+      <div class="grid grid-cols-[30px_1fr] gap-1.5">
+        <div class="font-mono text-[10.5px] text-faint pt-2.5"><%= format("%02d", hour_slot.hour) %></div>
+        <div class="relative py-1 pl-3.5 border-l border-line min-h-[26px]">
+          <% hour_slot.appointments.each do |appointment| %>
+            <div class="my-0.5 px-3 py-2.5 rounded-[13px] bg-ink text-paper">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-75 shrink-0"><%= l(appointment.starts_at, format: :time_only) %></span>
+                <span class="text-[13.5px] font-semibold flex-1 min-w-0 truncate"><%= appointment.title %></span>
+              </div>
+              <% if appointment.location.present? %>
+                <div class="text-[11.5px] opacity-70 mt-0.5 pl-0.5 truncate"><%= appointment.location %></div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% hour_slot.goals.each do |goal| %>
+            <% completion = @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
+            <%# Read-only here — mark complete from the checklist above, which
+                stays the single source of truth for a goal's done state. %>
+            <div class="my-0.5 px-3 py-2.5 rounded-[13px] border <%= completion ? "border-success/40 bg-success-soft" : "border-line bg-[oklch(0.97_0.008_80)]" %>">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0 <%= completion ? "bg-success" : "bg-accent" %>"></span>
+                <span class="text-[13.5px] font-semibold flex-1 min-w-0 truncate <%= "line-through opacity-60" if completion %>"><%= goal.title %></span>
+              </div>
+            </div>
+          <% end %>
+
+          <div data-planning-target="placeholder" data-action="click->planning#pickHour" data-planning-hour-param="<%= hour_slot.hour %>"
+               class="hidden my-0.5 rounded-xl border-[1.5px] border-dashed border-accent bg-accent-soft px-3 py-2 font-mono text-[11px] text-accent-dark cursor-pointer">
+            caser ici
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

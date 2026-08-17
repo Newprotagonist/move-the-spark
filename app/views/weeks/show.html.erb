@@ -22,7 +22,7 @@
   <% else %>
     <% @weekly_goals.each do |goal| %>
       <div class="px-4">
-        <%= render "goals/goal", goal: goal, reference_date: @week_start, completion: @completions[[ goal.id, @week_start ]] %>
+        <%= render "goals/goal", goal: goal, reference_date: @week_start, completion: @completions[[ goal.id, @week_start ]], plannable: false %>
       </div>
     <% end %>
   <% end %>
@@ -42,7 +42,7 @@
       <% else %>
         <% day[:goals].each do |goal| %>
           <div class="px-4">
-            <%= render "goals/goal", goal: goal, reference_date: day[:date], completion: @completions[[ goal.id, day[:date] ] ] %>
+            <%= render "goals/goal", goal: goal, reference_date: day[:date], completion: @completions[[ goal.id, day[:date] ] ], plannable: false %>
           </div>
         <% end %>
         <% day[:appointments].each do |appointment| %>

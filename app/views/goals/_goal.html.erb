@@ -1,3 +1,4 @@
+<% plannable = local_assigns.fetch(:plannable, true) %>
 <%= turbo_frame_tag dom_id(goal, reference_date.to_s) do %>
   <div class="flex items-center gap-1 py-1">
     <%= button_to(
@@ -22,6 +23,9 @@
         <% elsif goal.recurring? %>
           <span class="font-mono text-[9.5px] tracking-[.1em] uppercase px-1.5 py-1 rounded-md bg-line/60 text-dim">chaque jour</span>
         <% end %>
+        <% if goal.scheduled_hour.present? %>
+          <span class="font-mono text-[10.5px] text-dim"><%= format("%02d:00", goal.scheduled_hour) %></span>
+        <% end %>
         <% if goal.recurring? && (avg = goal.average_duration_seconds) %>
           <span class="font-mono text-[10.5px] text-dim">≈ <%= (avg / 60).round %> min</span>
         <% end %>
@@ -36,10 +40,20 @@
             "aria-label": "Arrêter le chrono",
             form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
     <% elsif !completion %>
-      <%= button_to "▶", start_timer_goal_path(goal),
-            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-faint",
-            "aria-label": "Démarrer le chrono",
-            form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
+      <% if plannable %>
+        <button type="button" class="shrink-0 p-2.5 text-faint" aria-label="Caser dans le ruban" title="Caser dans le ruban"
+                data-action="click->planning#start" data-planning-goal-id-param="<%= goal.id %>" data-planning-goal-title-param="<%= goal.title %>">
+          <span class="inline-block w-[13px] h-[13px] rounded-full border-[1.5px] border-current relative">
+            <span class="absolute left-1/2 top-0.5 w-[1.5px] h-[4.5px] bg-current"></span>
+          </span>
+        </button>
+      <% end %>
+      <% if goal.timed? %>
+        <%= button_to "▶", start_timer_goal_path(goal),
+              method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-faint",
+              "aria-label": "Démarrer le chrono",
+              form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
+      <% end %>
     <% end %>
 
     <%= link_to "Modifier", edit_goal_path(goal), data: { turbo_frame: "sheet" },

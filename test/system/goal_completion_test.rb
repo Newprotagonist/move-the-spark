@@ -4,7 +4,7 @@ class GoalCompletionTest < ApplicationSystemTestCase
   test "creating a daily goal and completing it updates points and streak" do
     visit root_path
 
-    click_on "+ Objectif récurrent"
+    click_on "+ objectif"
     fill_in "Titre", with: "Lire 20 minutes"
     choose "Récurrent", allow_label_click: true
     select "Chaque jour", from: "Fréquence"

@@ -1,0 +1,21 @@
+<% todos = @daily_goals + @weekly_goals %>
+<% done = todos.count { |g| @completions[[ g.id, g.occurrence_date(@date) ]] } %>
+<% total = todos.size %>
+<% pct = total.zero? ? 0 : (done * 100 / total) %>
+<% headline = (total.positive? && pct == 100) ? "Journée bouclée" : (pct >= 50 ? "Bien lancé" : "La journée commence") %>
+
+<div class="flex items-center gap-3.5 p-3.5 rounded-[18px] bg-paper border border-line mb-4">
+  <div class="relative w-[52px] h-[52px] shrink-0 rounded-full" style="background: conic-gradient(var(--color-accent) <%= pct %>%, var(--color-line) 0)">
+    <div class="absolute inset-1.5 rounded-full bg-paper flex items-center justify-center font-mono text-xs"><%= done %>/<%= total %></div>
+  </div>
+  <div class="flex-1 min-w-0">
+    <div class="text-[14px] font-semibold"><%= headline %></div>
+    <div class="text-xs text-dim mt-0.5">
+      <%= @appointments.size %> rendez-vous · <%= total - done %> objectif<%= "s" if total - done != 1 %> restant<%= "s" if total - done != 1 %>
+    </div>
+  </div>
+  <%= link_to "←", day_path(date: @previous_date), "aria-label": "Jour précédent",
+        class: "w-9 h-9 rounded-full border border-line flex items-center justify-center text-dim shrink-0" %>
+  <%= link_to "→", day_path(date: @next_date), "aria-label": "Jour suivant",
+        class: "w-9 h-9 rounded-full border border-line flex items-center justify-center text-dim shrink-0" %>
+</div>

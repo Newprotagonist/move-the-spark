@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       post :uncomplete
       post :start_timer
       post :stop_timer
+      patch :schedule
     end
   end
 

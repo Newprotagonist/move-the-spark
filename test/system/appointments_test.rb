@@ -4,7 +4,7 @@ class AppointmentsTest < ApplicationSystemTestCase
   test "creating an appointment shows it in the combined day view" do
     visit root_path
 
-    click_on "+ Rendez-vous"
+    click_on "+ rendez-vous"
     fill_in "Titre", with: "Dentiste"
     fill_in "Lieu (optionnel)", with: "Cabinet Dr. Martin"
     # `set` on a native datetime-local input simulates keystrokes, which can

@@ -150,4 +150,38 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "turbo-stream", response.media_type
   end
+
+  test "schedule sets the goal's hour slot" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    patch schedule_goal_path(goal), params: { hour: 14, date: "2026-08-17" }
+
+    assert_equal 14, goal.reload.scheduled_hour
+  end
+
+  test "schedule clears the hour slot when hour is blank" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+
+    patch schedule_goal_path(goal), params: { hour: "", date: "2026-08-17" }
+
+    assert_nil goal.reload.scheduled_hour
+  end
+
+  test "schedule responds with a turbo stream replacing the day ribbon" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    patch schedule_goal_path(goal), params: { hour: 14, date: "2026-08-17" }, as: :turbo_stream
+
+    assert_response :success
+    assert_match "turbo-stream", response.media_type
+    assert_match "day-ribbon", response.body
+  end
+
+  test "schedule redirects to the day when requested as html" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    patch schedule_goal_path(goal), params: { hour: 14, date: "2026-08-17" }
+
+    assert_redirected_to day_path(date: "2026-08-17")
+  end
 end

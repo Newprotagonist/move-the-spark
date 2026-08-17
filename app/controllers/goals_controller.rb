@@ -1,5 +1,7 @@
 class GoalsController < ApplicationController
-  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer ]
+  include DayScoped
+
+  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :schedule ]
   before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
 
   def new
@@ -82,6 +84,19 @@ class GoalsController < ApplicationController
     end
 
     respond_to_toggle(occurred_on)
+  end
+
+  # Assigns (or clears, if hour is blank) this goal's slot in the day
+  # ribbon — a UI-only placement, not tied to any particular occurrence.
+  def schedule
+    date = Date.parse(params[:date])
+    @goal.update!(scheduled_hour: params[:hour].presence)
+    load_day(date)
+
+    respond_to do |format|
+      format.html { redirect_to day_path(date: date) }
+      format.turbo_stream { render turbo_stream: turbo_stream.replace("day-ribbon", partial: "days/ribbon") }
+    end
   end
 
   private

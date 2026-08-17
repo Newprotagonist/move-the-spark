@@ -1,0 +1,22 @@
+<div class="flex items-baseline justify-between mb-2.5 mt-1">
+  <div class="font-mono text-[10px] tracking-[.16em] uppercase text-dim">À faire</div>
+  <%= link_to "+ objectif", new_goal_path(recurring: false, scheduled_on: @date), data: { turbo_frame: "sheet" },
+        class: "text-[12px] font-semibold text-accent p-1.5" %>
+</div>
+
+<div class="flex flex-col gap-2 mb-6">
+  <% if (@daily_goals + @weekly_goals).empty? %>
+    <p class="text-sm text-dim px-1">Rien à faire aujourd’hui.</p>
+  <% else %>
+    <% @daily_goals.each do |goal| %>
+      <div class="bg-paper rounded-2xl border border-line px-3.5">
+        <%= render "goals/goal", goal: goal, reference_date: @date, completion: @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
+      </div>
+    <% end %>
+    <% @weekly_goals.each do |goal| %>
+      <div class="bg-paper rounded-2xl border border-line px-3.5">
+        <%= render "goals/goal", goal: goal, reference_date: goal.occurrence_date(@date), completion: @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

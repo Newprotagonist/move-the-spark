@@ -3,45 +3,20 @@
 <%= render "shared/screen_header", kicker: (@date == Date.current ? "aujourd'hui" : l(@date, format: :short)),
       title: l(@date, format: :long).capitalize %>
 
-<div class="flex items-center justify-between mb-4">
-  <%= link_to "← #{l(@previous_date, format: :short)}", day_path(date: @previous_date), class: "text-sm text-accent font-medium" %>
-  <%= link_to "#{l(@next_date, format: :short)} →", day_path(date: @next_date), class: "text-sm text-accent font-medium" %>
-</div>
+<%= render "progress_ring" %>
 
-<% if @today_progress %>
-  <p class="text-sm text-dim mb-4">
-    <%= @today_progress[:done] %>/<%= @today_progress[:total] %> objectif<%= "s" if @today_progress[:total] != 1 %> du jour accompli<%= "s" if @today_progress[:done] != 1 %>
-  </p>
-<% end %>
+<div data-controller="planning" class="relative">
+  <%= render "checklist" %>
+  <%= render "ribbon" %>
 
-<%# One combined list: goals (no fixed time) first, then appointments in chronological order — no separate sections. %>
-<section class="bg-paper rounded-[20px] border border-line divide-y divide-line mb-6">
-  <% if @daily_goals.empty? && @weekly_goals.empty? && @appointments.empty? %>
-    <p class="px-4 py-4 text-sm text-dim">Rien de prévu pour ce jour.</p>
-  <% else %>
-    <% @daily_goals.each do |goal| %>
-      <div class="px-4">
-        <%= render "goals/goal", goal: goal, reference_date: @date, completion: @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
-      </div>
-    <% end %>
-    <% @weekly_goals.each do |goal| %>
-      <div class="px-4">
-        <%= render "goals/goal", goal: goal, reference_date: goal.occurrence_date(@date), completion: @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
-      </div>
-    <% end %>
-    <% @appointments.each do |appointment| %>
-      <div class="px-4">
-        <%= render "appointments/appointment", appointment: appointment %>
-      </div>
-    <% end %>
+  <%= form_with url: "/goals/0/schedule", method: :patch, data: { planning_target: "form" }, class: "hidden" do |f| %>
+    <%= f.hidden_field :hour, data: { "planning-target": "hourField" } %>
+    <%= f.hidden_field :date, value: @date %>
   <% end %>
-</section>
 
-<div class="flex flex-wrap gap-2 pb-4">
-  <%= link_to "+ Objectif du jour", new_goal_path(recurring: false, scheduled_on: @date), data: { turbo_frame: "sheet" },
-        class: "text-[13px] font-semibold px-3.5 py-2.5 rounded-full bg-ink text-paper" %>
-  <%= link_to "+ Objectif récurrent", new_goal_path(recurring: true), data: { turbo_frame: "sheet" },
-        class: "text-[13px] font-semibold px-3.5 py-2.5 rounded-full border border-line bg-paper" %>
-  <%= link_to "+ Rendez-vous", new_appointment_path(date: @date), data: { turbo_frame: "sheet" },
-        class: "text-[13px] font-semibold px-3.5 py-2.5 rounded-full border border-line bg-paper" %>
+  <div data-planning-target="cancelBar"
+       class="hidden fixed left-3.5 right-3.5 bottom-24 z-20 flex items-center gap-2.5 px-3.5 py-3 rounded-2xl bg-ink text-paper shadow-lg">
+    <span data-planning-target="cancelLabel" class="flex-1 text-[12.5px] leading-snug"></span>
+    <button type="button" data-action="planning#cancel" class="font-mono text-[10.5px] opacity-70 p-2 shrink-0">ANNULER</button>
+  </div>
 </div>
