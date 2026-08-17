@@ -185,17 +185,20 @@ class GoalsController < ApplicationController
           ),
           turbo_stream.replace("gamification-summary", partial: "shared/points_pill")
         ]
-        # The day page's progress ring also needs updating — but only safe to
-        # recompute from `occurred_on` for a daily/one-off goal, where it's
-        # exactly the day being viewed. A weekly goal's occurred_on is its
-        # week's Monday, which could be a different day than whatever's
-        # currently on screen, so it's left stale until the next navigation
-        # rather than risk showing the wrong day's numbers.
+        # The day page's progress ring and ribbon also need updating — but
+        # only safe to recompute from `occurred_on` for a daily/one-off
+        # goal, where it's exactly the day being viewed. A weekly goal's
+        # occurred_on is its week's Monday, which could be a different day
+        # than whatever's currently on screen, so both are left stale until
+        # the next navigation rather than risk showing the wrong day's data
+        # (this also covers the ribbon card for a goal that's both
+        # completed here and separately scheduled into an hour slot).
         if @goal.daily?
           load_day(occurred_on)
           @previous_date = occurred_on - 1
           @next_date = occurred_on + 1
           streams << turbo_stream.replace("progress-ring", partial: "days/progress_ring")
+          streams << turbo_stream.replace("day-ribbon", partial: "days/ribbon")
         end
         streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: toast }) if toast
         render turbo_stream: streams

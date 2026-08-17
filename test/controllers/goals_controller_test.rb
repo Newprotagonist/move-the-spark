@@ -211,6 +211,31 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "progress-ring", response.body
   end
 
+  test "complete also replaces the ribbon, so a goal scheduled into an hour slot shows as done there too" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_match "turbo-stream action=\"replace\" target=\"day-ribbon\"", response.body
+  end
+
+  test "uncomplete also replaces the ribbon for a daily goal" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    post uncomplete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_match "turbo-stream action=\"replace\" target=\"day-ribbon\"", response.body
+  end
+
+  test "complete does not touch the ribbon for a weekly goal (occurred_on isn't the viewed day)" do
+    goal = Goal.create!(title: "Weekly habit", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_no_match "day-ribbon", response.body
+  end
+
   test "complete appends a points toast only the first time (not on a no-op repeat)" do
     Setting.instance.update!(points_per_goal: 20)
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
