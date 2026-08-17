@@ -12,7 +12,7 @@
 
   <div>
     <%= f.label :title, "Titre", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true %>
+    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true, required: true %>
   </div>
 
   <div>
@@ -20,36 +20,37 @@
     <%= f.text_area :description, rows: 2, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
   </div>
 
-  <div>
-    <%= f.label :recurring, "Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <div class="flex gap-4 text-sm">
-      <label class="flex items-center gap-1">
-        <%= f.radio_button :recurring, false, checked: !goal.recurring %>
-        Ponctuel (un jour précis)
-      </label>
-      <label class="flex items-center gap-1">
-        <%= f.radio_button :recurring, true, checked: goal.recurring %>
-        Récurrent
-      </label>
+  <div data-controller="goal-type">
+    <div>
+      <%= f.label :recurring, "Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <div class="flex gap-4 text-sm">
+        <label class="flex items-center gap-1 py-1">
+          <%= f.radio_button :recurring, false, checked: !goal.recurring, data: { action: "goal-type#toggle" } %>
+          Ponctuel (un jour précis)
+        </label>
+        <label class="flex items-center gap-1 py-1">
+          <%= f.radio_button :recurring, true, checked: goal.recurring, data: { action: "goal-type#toggle", goal_type_target: "recurringRadio" } %>
+          Récurrent
+        </label>
+      </div>
     </div>
-  </div>
 
-  <div>
-    <%= f.label :scheduled_on, "Date", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.date_field :scheduled_on, value: goal.scheduled_on || Date.current, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-    <p class="text-xs text-gray-400 mt-1">Utilisé uniquement pour un objectif ponctuel.</p>
-  </div>
+    <div data-goal-type-target="oneOffFields" class="mt-4">
+      <%= f.label :scheduled_on, "Date", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.date_field :scheduled_on, value: goal.scheduled_on || Date.current, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    </div>
 
-  <div>
-    <%= f.label :frequency, "Fréquence", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :frequency, [ [ "Chaque jour", "daily" ], [ "Chaque semaine", "weekly" ] ], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-    <p class="text-xs text-gray-400 mt-1">Utilisé uniquement pour un objectif récurrent.</p>
-  </div>
+    <div data-goal-type-target="recurringFields" class="mt-4 space-y-4">
+      <div>
+        <%= f.label :frequency, "Fréquence", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.select :frequency, [ [ "Chaque jour", "daily" ], [ "Chaque semaine", "weekly" ] ], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
 
-  <div>
-    <%= f.label :active_from, "Actif à partir du", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.date_field :active_from, value: goal.active_from || Date.current, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-    <p class="text-xs text-gray-400 mt-1">Utilisé uniquement pour un objectif récurrent.</p>
+      <div>
+        <%= f.label :active_from, "Actif à partir du", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.date_field :active_from, value: goal.active_from || Date.current, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+    </div>
   </div>
 
   <div class="flex items-center gap-3 pt-2">

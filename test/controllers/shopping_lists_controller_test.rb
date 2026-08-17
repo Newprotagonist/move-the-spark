@@ -50,4 +50,34 @@ class ShoppingListsControllerTest < ActionDispatch::IntegrationTest
       end
     end
   end
+
+  test "turbo_stream: creating an item replaces the items list in place" do
+    list = ShoppingList.create!(name: "Courses hebdo")
+
+    post shopping_list_shopping_list_items_path(list), params: { shopping_list_item: { name: "Pommes" } }, as: :turbo_stream
+
+    assert_response :success
+    assert_match "turbo-stream", response.media_type
+    assert_match "Pommes", response.body
+  end
+
+  test "turbo_stream: checking an item replaces just that item" do
+    list = ShoppingList.create!(name: "Courses hebdo")
+    item = list.shopping_list_items.create!(name: "Pommes")
+
+    patch shopping_list_item_path(item), params: { shopping_list_item: { checked: true } }, as: :turbo_stream
+
+    assert_response :success
+    assert_match "line-through", response.body
+  end
+
+  test "turbo_stream: deleting an item removes it in place" do
+    list = ShoppingList.create!(name: "Courses hebdo")
+    item = list.shopping_list_items.create!(name: "Pommes")
+
+    delete shopping_list_item_path(item), as: :turbo_stream
+
+    assert_response :success
+    assert_match "turbo-stream action=\"remove\"", response.body
+  end
 end

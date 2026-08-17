@@ -12,7 +12,9 @@ class AppointmentsController < ApplicationController
   def create
     @appointment = Appointment.new(appointment_params)
     if @appointment.save
-      redirect_to redirect_target, notice: "Rendez-vous créé."
+      # Not referer-based: the referer for a create POST is the "new" form
+      # page itself. Go to the day the appointment is actually on instead.
+      redirect_to day_path(date: @appointment.starts_at.to_date), notice: "Rendez-vous créé."
     else
       render :new, status: :unprocessable_entity
     end

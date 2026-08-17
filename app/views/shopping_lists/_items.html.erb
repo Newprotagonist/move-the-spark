@@ -1,0 +1,11 @@
+<section id="shopping_list_items" class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mb-6">
+  <% if shopping_list.shopping_list_items.empty? %>
+    <p class="p-4 text-sm text-gray-400">Liste vide.</p>
+  <% else %>
+    <% shopping_list.shopping_list_items.each do |item| %>
+      <div class="px-4">
+        <%= render "shopping_list_items/item", item: item %>
+      </div>
+    <% end %>
+  <% end %>
+</section>

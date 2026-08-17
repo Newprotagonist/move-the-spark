@@ -12,7 +12,9 @@ class GoalsController < ApplicationController
   def create
     @goal = Goal.new(goal_params)
     if @goal.save
-      redirect_to redirect_target, notice: "Objectif créé."
+      # Not referer-based: the referer for a create POST is the "new" form
+      # page itself, which would just bounce back to an empty form.
+      redirect_to(@goal.recurring? ? root_path : day_path(date: @goal.scheduled_on), notice: "Objectif créé.")
     else
       render :new, status: :unprocessable_entity
     end
@@ -87,8 +89,19 @@ class GoalsController < ApplicationController
     @goal = Goal.find(params[:id])
   end
 
+  # The form always submits all four type-specific fields (the irrelevant
+  # ones are only hidden via CSS, not removed from the DOM), so the fields
+  # that don't apply to the chosen type are cleared here rather than trusted
+  # from the client.
   def goal_params
-    params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from)
+    permitted = params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from)
+    if ActiveModel::Type::Boolean.new.cast(permitted[:recurring])
+      permitted[:scheduled_on] = nil
+    else
+      permitted[:frequency] = nil
+      permitted[:active_from] = nil
+    end
+    permitted
   end
 
   def redirect_target

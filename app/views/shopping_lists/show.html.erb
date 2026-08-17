@@ -10,20 +10,13 @@
   </div>
 </div>
 
-<section class="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mb-6">
-  <% if @shopping_list.shopping_list_items.empty? %>
-    <p class="p-4 text-sm text-gray-400">Liste vide.</p>
-  <% else %>
-    <% @shopping_list.shopping_list_items.each do |item| %>
-      <div class="px-4">
-        <%= render "shopping_list_items/item", item: item %>
-      </div>
-    <% end %>
-  <% end %>
-</section>
+<%= render "items", shopping_list: @shopping_list %>
 
-<%= form_with model: @shopping_list_item, url: shopping_list_shopping_list_items_path(@shopping_list), class: "flex gap-2" do |f| %>
-  <%= f.text_field :name, placeholder: "Ajouter un article…", class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+<%= form_with model: @shopping_list_item, url: shopping_list_shopping_list_items_path(@shopping_list), class: "flex gap-2",
+      data: { controller: "reset-form" } do |f| %>
+  <%= f.text_field :name, placeholder: "Ajouter un article…", required: true, autofocus: true,
+        class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500",
+        data: { "reset-form-target": "field" } %>
   <%= f.submit "Ajouter", class: "px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" %>
 <% end %>
 

@@ -1,10 +1,11 @@
 <%= turbo_frame_tag dom_id(goal, reference_date.to_s) do %>
-  <div class="flex items-center gap-3 py-2">
+  <div class="flex items-center gap-1 py-1">
     <%= button_to(
           completion ? uncomplete_goal_path(goal) : complete_goal_path(goal),
           method: :post,
           params: { occurred_on: reference_date },
-          class: "shrink-0",
+          class: "shrink-0 flex items-center justify-center p-2.5",
+          "aria-label": completion ? "Marquer comme non fait" : "Marquer comme fait",
           form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } }
         ) do %>
       <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-bold
@@ -31,14 +32,16 @@
       <span data-controller="timer" data-timer-started-at-value="<%= goal.current_timer_started_at.iso8601 %>"
             data-timer-target="display" class="text-xs text-gray-500 tabular-nums shrink-0">00:00</span>
       <%= button_to "⏹", stop_timer_goal_path(goal),
-            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 text-red-600",
+            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-red-600",
+            "aria-label": "Arrêter le chrono",
             form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
     <% elsif !completion %>
       <%= button_to "▶", start_timer_goal_path(goal),
-            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 text-gray-400 hover:text-indigo-600",
+            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-gray-400 hover:text-indigo-600",
+            "aria-label": "Démarrer le chrono",
             form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
     <% end %>
 
-    <%= link_to "Modifier", edit_goal_path(goal), class: "text-xs text-gray-400 hover:text-gray-600 shrink-0" %>
+    <%= link_to "Modifier", edit_goal_path(goal), class: "text-xs text-gray-400 hover:text-gray-600 shrink-0 py-2.5" %>
   </div>
 <% end %>

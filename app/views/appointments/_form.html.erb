@@ -12,12 +12,12 @@
 
   <div>
     <%= f.label :title, "Titre", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true %>
+    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true, required: true %>
   </div>
 
   <div>
     <%= f.label :starts_at, "Date et heure", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.datetime_field :starts_at, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    <%= f.datetime_field :starts_at, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", required: true %>
   </div>
 
   <div>

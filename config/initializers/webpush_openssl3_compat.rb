@@ -19,8 +19,8 @@ module Webpush
         asn1 = OpenSSL::ASN1::Sequence.new([
           OpenSSL::ASN1::Integer.new(1),
           OpenSSL::ASN1::OctetString.new(private_key_octets),
-          OpenSSL::ASN1::ASN1Data.new([OpenSSL::ASN1::ObjectId.new("prime256v1")], 0, :CONTEXT_SPECIFIC),
-          OpenSSL::ASN1::ASN1Data.new([OpenSSL::ASN1::BitString.new(public_key_bn.to_s(2))], 1, :CONTEXT_SPECIFIC)
+          OpenSSL::ASN1::ASN1Data.new([ OpenSSL::ASN1::ObjectId.new("prime256v1") ], 0, :CONTEXT_SPECIFIC),
+          OpenSSL::ASN1::ASN1Data.new([ OpenSSL::ASN1::BitString.new(public_key_bn.to_s(2)) ], 1, :CONTEXT_SPECIFIC)
         ])
         OpenSSL::PKey.read(asn1.to_der)
       else
@@ -84,7 +84,7 @@ module Webpush
       rs = ciphertext.bytesize
       raise ArgumentError, "encrypted payload is too big" if rs > 4096
 
-      aes128gcmheader = salt.to_s + [rs].pack("N*") + [serverkey16bn.bytesize].pack("C*") + serverkey16bn
+      aes128gcmheader = salt.to_s + [ rs ].pack("N*") + [ serverkey16bn.bytesize ].pack("C*") + serverkey16bn
 
       aes128gcmheader + ciphertext
     end

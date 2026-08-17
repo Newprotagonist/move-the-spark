@@ -1,19 +1,35 @@
 require "test_helper"
 
 class GoalsControllerTest < ActionDispatch::IntegrationTest
-  test "creates a one-off goal" do
+  test "creates a one-off goal and redirects to the day it's scheduled on" do
     assert_difference("Goal.count", 1) do
       post goals_path, params: { goal: { title: "Buy milk", recurring: "false", scheduled_on: "2026-08-17" } }
     end
-    assert_redirected_to root_path
+    assert_redirected_to day_path(date: "2026-08-17")
     assert_equal "daily", Goal.last.frequency
   end
 
-  test "creates a recurring weekly goal" do
+  test "creates a recurring weekly goal and redirects to today" do
     assert_difference("Goal.count", 1) do
       post goals_path, params: { goal: { title: "Review week", recurring: "true", frequency: "weekly", active_from: "2026-08-01" } }
     end
+    assert_redirected_to root_path
     assert_equal "weekly", Goal.last.frequency
+  end
+
+  test "one-off goal creation ignores a stray active_from from the hidden recurring fields" do
+    post goals_path, params: { goal: { title: "Buy milk", recurring: "false", scheduled_on: "2026-08-17", active_from: "2026-08-01", frequency: "weekly" } }
+    goal = Goal.last
+    assert goal.persisted?
+    assert_nil goal.active_from
+    assert_equal "daily", goal.frequency
+  end
+
+  test "recurring goal creation ignores a stray scheduled_on from the hidden one-off field" do
+    post goals_path, params: { goal: { title: "Review week", recurring: "true", frequency: "weekly", active_from: "2026-08-01", scheduled_on: "2026-08-17" } }
+    goal = Goal.last
+    assert goal.persisted?
+    assert_nil goal.scheduled_on
   end
 
   test "invalid goal re-renders the form with errors" do

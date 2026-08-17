@@ -14,11 +14,11 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "creates an appointment" do
+  test "creates an appointment and redirects to the day it's on" do
     assert_difference("Appointment.count", 1) do
       post appointments_path, params: { appointment: { title: "Dentiste", starts_at: "2026-08-20T10:00", location: "Cabinet" } }
     end
-    assert_redirected_to appointments_path
+    assert_redirected_to day_path(date: "2026-08-20")
   end
 
   test "invalid appointment re-renders the form" do
