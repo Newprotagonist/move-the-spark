@@ -18,7 +18,8 @@
     <span class="font-mono text-[10.5px] opacity-80 shrink-0">NIV. <%= level_for_points(@total_points) %></span>
   </div>
   <div class="relative text-xs opacity-60 mt-2">
-    <%= points_to_next_level(@total_points) %> points avant le niveau <%= level_for_points(@total_points) + 1 %>
+    <span class="font-semibold opacity-90"><%= level_tier_name(level_for_points(@total_points)) %></span>
+    · <%= points_to_next_level(@total_points) %> points avant le niveau <%= level_for_points(@total_points) + 1 %>
   </div>
 </div>
 

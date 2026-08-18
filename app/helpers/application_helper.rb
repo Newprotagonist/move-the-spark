@@ -25,6 +25,17 @@ module ApplicationHelper
     100 - level_progress_percent(points)
   end
 
+  # Named tiers grouping levels — early ones pass quickly, later ones take
+  # much longer, same shape as most game leveling curves.
+  LEVEL_TIERS = [
+    [ 1, "Étincelle" ], [ 3, "Élan" ], [ 6, "Rythme" ],
+    [ 11, "Constance" ], [ 21, "Maîtrise" ], [ 41, "Légende" ]
+  ].freeze
+
+  def level_tier_name(level)
+    LEVEL_TIERS.reverse.find { |min, _| level >= min }.last
+  end
+
   def relative_day_label(date)
     days = (date - Date.current).to_i
     case days
