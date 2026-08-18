@@ -1,7 +1,7 @@
 class GoalsController < ApplicationController
   include DayScoped
 
-  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :cancel_timer, :archive, :unarchive, :focus, :schedule ]
+  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :cancel_timer, :archive, :unarchive, :focus, :history, :schedule ]
   before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
   before_action -> { @fullscreen = true }, only: [ :focus ]
 
@@ -58,12 +58,17 @@ class GoalsController < ApplicationController
 
   def complete
     occurred_on = Date.parse(params[:occurred_on])
+    streak_before = current_streak_for(@goal)
     completion = @goal.goal_completions.find_or_create_by!(occurred_on: occurred_on) do |c|
       c.completed_at = Time.current
       c.points_awarded = Setting.instance.points_per_goal
     end
 
-    toast = "+#{completion.points_awarded} points" if completion.previously_new_record?
+    toast = nil
+    if completion.previously_new_record?
+      bonus = award_streak_bonus!(completion, streak_before, current_streak_for(@goal))
+      toast = completion_toast(completion, bonus)
+    end
     respond_to_toggle(occurred_on, toast: toast)
   end
 
@@ -92,19 +97,23 @@ class GoalsController < ApplicationController
 
     toast = nil
     if @goal.timer_running?
+      streak_before = current_streak_for(@goal)
+      newly_created = !@goal.goal_completions.exists?(occurred_on: occurred_on)
       duration_seconds = (Time.current - @goal.current_timer_started_at).round
       completion = @goal.goal_completions.find_or_initialize_by(occurred_on: occurred_on)
-      completion.points_awarded = Setting.instance.points_per_goal if completion.new_record?
+      completion.points_awarded = Setting.instance.points_per_goal if newly_created
       completion.started_at = @goal.current_timer_started_at
       completion.duration_seconds = duration_seconds
       completion.completed_at = Time.current
       completion.save!
       @goal.update!(current_timer_started_at: nil)
+
+      bonus = newly_created ? award_streak_bonus!(completion, streak_before, current_streak_for(@goal)) : 0
+      toast = completion_toast(completion, bonus)
       # The flash only reaches the user via format.html (the focus page
       # opts out of Turbo) — guarded so it doesn't leak into the session and
       # surface later when this is really the checklist's turbo_stream path.
-      flash[:notice] = "+#{completion.points_awarded} points · #{duration_seconds / 60} min" unless request.format.symbol == :turbo_stream
-      toast = "+#{completion.points_awarded} points"
+      flash[:notice] = "#{toast} · #{duration_seconds / 60} min" unless request.format.symbol == :turbo_stream
     end
 
     respond_to_toggle(occurred_on, toast: toast)
@@ -123,6 +132,11 @@ class GoalsController < ApplicationController
   def focus
     @occurred_on = Date.parse(params[:occurred_on])
     @goal.update!(current_timer_started_at: Time.current) unless @goal.timer_running?
+  end
+
+  def history
+    @history = GoalHistory.new(@goal)
+    @occurrences = @history.occurrences
   end
 
   # Assigns (or clears, if hour is blank) this goal's slot in the day
@@ -185,6 +199,26 @@ class GoalsController < ApplicationController
   # the focus page itself.
   def redirect_target
     params[:return_to].presence || request.referer || root_path
+  end
+
+  def current_streak_for(goal)
+    StreakCalculator.new(unit: goal.weekly? ? :week : :day).current_streak
+  end
+
+  # Awards a bonus only when this completion is what actually grew the
+  # user's real current streak (not merely "any goal was completed today")
+  # — retroactively completing a past missed day counts too, as long as it
+  # closes the gap and bumps the streak as of today.
+  def award_streak_bonus!(completion, streak_before, streak_after)
+    return 0 unless streak_after > streak_before
+
+    bonus = [ streak_after, Setting.instance.streak_bonus_cap ].min
+    completion.update!(points_awarded: completion.points_awarded + bonus) if bonus.positive?
+    bonus
+  end
+
+  def completion_toast(completion, bonus)
+    bonus.positive? ? "+#{completion.points_awarded} points (+#{bonus} série !)" : "+#{completion.points_awarded} points"
   end
 
   def respond_to_toggle(occurred_on, toast: nil)

@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       post :archive
       post :unarchive
       get :focus
+      get :history
       patch :schedule
     end
   end

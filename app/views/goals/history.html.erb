@@ -1,0 +1,67 @@
+<% content_for :title, "#{@goal.title} — historique — Planner" %>
+
+<%= render "shared/screen_header", kicker: "historique", title: @goal.title %>
+
+<div class="flex gap-2.5 mb-4">
+  <div class="flex-1 rounded-[18px] bg-paper border border-line p-3.5">
+    <div class="font-serif-display text-[30px] leading-none"><%= @history.total_completions %></div>
+    <div class="text-[11.5px] text-dim mt-1">complétion<%= "s" if @history.total_completions != 1 %></div>
+  </div>
+  <div class="flex-1 rounded-[18px] bg-paper border border-line p-3.5">
+    <div class="font-serif-display text-[30px] leading-none"><%= @history.average_duration_seconds ? (@history.average_duration_seconds / 60).round : "—" %></div>
+    <div class="text-[11.5px] text-dim mt-1">min en moyenne</div>
+  </div>
+</div>
+
+<div class="rounded-[18px] bg-paper border border-line p-4 mb-4">
+  <div class="font-mono text-[10px] tracking-[.16em] uppercase text-dim mb-3">Complétion</div>
+  <% if @occurrences.empty? %>
+    <p class="text-sm text-dim">Pas encore d’historique.</p>
+  <% else %>
+    <div class="grid grid-cols-7 gap-1.5">
+      <% @occurrences.each do |occurrence| %>
+        <div class="aspect-square rounded-[5px] <%= occurrence.done ? "bg-success" : "bg-line/50" %>"
+             title="<%= l(occurrence.date, format: :default) %>"></div>
+      <% end %>
+    </div>
+    <div class="flex justify-between mt-2.5 font-mono text-[9.5px] text-faint">
+      <span><%= l(@occurrences.first.date, format: :short) %></span>
+      <span><%= @occurrences.count(&:done) %>/<%= @occurrences.size %> faits</span>
+    </div>
+  <% end %>
+</div>
+
+<% timed_occurrences = @occurrences.select { |o| o.duration_seconds.present? }.last(10) %>
+<% if timed_occurrences.any? %>
+  <div class="rounded-[20px] bg-ink text-paper p-[18px] mb-5">
+    <div class="font-mono text-[10px] tracking-[.16em] uppercase opacity-60">Durée dans le temps</div>
+
+    <div class="flex items-end gap-1.5 h-[74px] my-4">
+      <% max_duration = timed_occurrences.map(&:duration_seconds).max %>
+      <% timed_occurrences.each do |occurrence| %>
+        <% height = max_duration.positive? ? [ 10 + (occurrence.duration_seconds.to_f / max_duration * 64).round, 74 ].min : 10 %>
+        <div class="flex-1 flex flex-col items-center gap-1.5">
+          <div class="w-full rounded-t-md rounded-b-sm bg-accent" style="height: <%= height %>px"></div>
+          <span class="font-mono text-[9.5px] uppercase opacity-55"><%= l(occurrence.date, format: "%d/%m") %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <% average = @history.average_duration_seconds %>
+    <% last_duration = timed_occurrences.last.duration_seconds %>
+    <% if average&.positive? %>
+      <% diff_percent = ((last_duration - average).abs / average * 100).round %>
+      <div class="text-[12.5px] opacity-70 leading-relaxed">
+        <% if diff_percent.zero? %>
+          Pile ta moyenne
+        <% elsif last_duration < average %>
+          ⚡ <%= diff_percent %>% plus rapide que ta moyenne
+        <% else %>
+          🐢 <%= diff_percent %>% plus lent que ta moyenne
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= link_to "← Retour", edit_goal_path(@goal), data: { turbo_frame: "sheet" }, class: "block mb-4 text-sm text-accent font-medium" %>

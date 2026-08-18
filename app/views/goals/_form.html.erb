@@ -104,6 +104,8 @@
     spec hitting the route directly. %>
 <% if goal.persisted? %>
   <div class="flex items-center gap-3 pt-3">
+    <%= link_to "Voir l’historique", history_goal_path(goal), data: { turbo_frame: "_top" },
+          class: "text-[13px] text-dim p-2" %>
     <% if goal.recurring? %>
       <% if goal.archived? %>
         <%= button_to "Réactiver", unarchive_goal_path(goal), method: :post,
