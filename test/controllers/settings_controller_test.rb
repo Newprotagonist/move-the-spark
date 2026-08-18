@@ -25,6 +25,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "changing points_per_goal affects future completions, not past ones" do
+    Setting.instance.update!(streak_bonus_cap: 0)
     goal = Goal.create!(title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     post complete_goal_path(goal), params: { occurred_on: "2026-08-16" }
     assert_equal 10, goal.goal_completions.sole.points_awarded

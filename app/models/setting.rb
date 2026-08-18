@@ -5,6 +5,7 @@ class Setting < ApplicationRecord
   validates :points_per_goal, numericality: { greater_than: 0 }
   validates :default_appointment_lead_minutes, numericality: { greater_than: 0 }
   validates :daily_goal_reminder_time, presence: true
+  validates :streak_bonus_cap, numericality: { greater_than_or_equal_to: 0 }
 
   def self.instance
     first_or_create!

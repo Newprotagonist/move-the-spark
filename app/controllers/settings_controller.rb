@@ -20,6 +20,6 @@ class SettingsController < ApplicationController
   private
 
   def setting_params
-    params.require(:setting).permit(:points_per_goal, :default_appointment_lead_minutes, :daily_goal_reminder_time)
+    params.require(:setting).permit(:points_per_goal, :default_appointment_lead_minutes, :daily_goal_reminder_time, :streak_bonus_cap)
   end
 end

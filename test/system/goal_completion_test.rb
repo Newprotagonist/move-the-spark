@@ -17,7 +17,9 @@ class GoalCompletionTest < ApplicationSystemTestCase
     click_button "Marquer comme fait"
 
     assert_text "Lire 20 minutes"
-    assert_text "⭐ 10"
+    # 10 points + a 1-point streak bonus: this completion is what grows the
+    # streak from 0 to 1.
+    assert_text "⭐ 11"
     assert_text "🔥 1"
   end
 end

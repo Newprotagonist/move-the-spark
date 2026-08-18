@@ -64,7 +64,7 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "completing a goal awards points_per_goal from Setting" do
-    Setting.instance.update!(points_per_goal: 25)
+    Setting.instance.update!(points_per_goal: 25, streak_bonus_cap: 0)
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
     post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }
@@ -118,7 +118,7 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
   test "stop_timer records the duration, completes the goal, and clears the running timer" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
-    Setting.instance.update!(points_per_goal: 15)
+    Setting.instance.update!(points_per_goal: 15, streak_bonus_cap: 0)
 
     travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
       post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
@@ -237,7 +237,7 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "complete appends a points toast only the first time (not on a no-op repeat)" do
-    Setting.instance.update!(points_per_goal: 20)
+    Setting.instance.update!(points_per_goal: 20, streak_bonus_cap: 0)
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
     post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
@@ -403,5 +403,74 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     post uncomplete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
 
     assert_match "Caser dans le ruban", response.body
+  end
+
+  test "completing a goal that grows the daily streak awards a bonus on top of points_per_goal" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+    end
+
+    completion = goal.goal_completions.sole
+    assert_equal 11, completion.points_awarded
+    assert_match "+11 points (+1 série !)", response.body
+  end
+
+  test "completing a goal does not award a bonus when the streak does not grow" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal_a = Goal.create!(title: "Habit A", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+    Goal.create!(title: "Habit B", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal_a), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+    end
+
+    completion = goal_a.goal_completions.sole
+    assert_equal 10, completion.points_awarded
+    assert_no_match "série", response.body
+  end
+
+  test "streak bonus is capped at streak_bonus_cap" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 2)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 17))
+    GoalCompletion.create!(goal: goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current, points_awarded: 10)
+    GoalCompletion.create!(goal: goal, occurred_on: Date.new(2026, 8, 18), completed_at: Time.current, points_awarded: 10)
+    GoalCompletion.create!(goal: goal, occurred_on: Date.new(2026, 8, 19), completed_at: Time.current, points_awarded: 10)
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal), params: { occurred_on: "2026-08-20" }
+    end
+
+    # The real streak just grew to 4, but the bonus caps at 2.
+    assert_equal 12, goal.goal_completions.find_by(occurred_on: "2026-08-20").points_awarded
+  end
+
+  test "stop_timer also awards the streak bonus when it grows the streak" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-20" }
+    end
+    travel_to Time.zone.local(2026, 8, 20, 10, 5, 0) do
+      post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+    end
+
+    completion = goal.goal_completions.sole
+    assert_equal 11, completion.points_awarded
+    assert_match "série", response.body
+  end
+
+  test "history renders stats and the completion strip for a goal" do
+    goal = Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 15))
+    GoalCompletion.create!(goal: goal, occurred_on: Date.new(2026, 8, 15), completed_at: Time.current, duration_seconds: 600, points_awarded: 10)
+
+    get history_goal_path(goal)
+
+    assert_response :success
+    assert_match "complétion", response.body
+    assert_match "min en moyenne", response.body
   end
 end

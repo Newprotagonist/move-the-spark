@@ -23,6 +23,9 @@ endroit unique pour noter ses rendez-vous.
   a finalement été ajouté lors de la refonte visuelle "Planner Moderne" importée depuis Claude
   Design — le design importé l'incluait explicitement, et l'utilisateur a validé cet écart
   au périmètre initial plutôt que de l'omettre. Toujours pas de badges/récompenses débloquables.
+  **Mise à jour** : le barème de points inclut désormais un bonus quand une complétion fait
+  progresser le streak courant (plafonné par un réglage `streak_bonus_cap`, désactivable à 0) —
+  ce qui répond à la question ouverte "bonus pour un streak long ?" ci-dessous.
 
 ### 3. Rendez-vous (RDV)
 - Créer un rdv avec titre, date, heure (et lieu/notes optionnels).
@@ -74,7 +77,9 @@ endroit unique pour noter ses rendez-vous.
 
 ## Questions ouvertes à trancher en phase de plan
 
-- Barème exact des points (fixe par objectif ? bonus pour un streak long ?).
+- Barème exact des points (fixe par objectif ? bonus pour un streak long ?). **Tranché** :
+  fixe par objectif (`points_per_goal`) + bonus optionnel plafonné quand le streak progresse
+  (voir section 2 ci-dessus).
 - Règle précise du streak (au moins un objectif fait, ou tous les objectifs faits, pour
   compter le jour/la semaine).
 - Délai des rappels push pour les rdv et heure des rappels pour les objectifs du jour.

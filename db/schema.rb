@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_164148) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_18_102107) do
   create_table "appointments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "location"
@@ -71,6 +71,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_164148) do
     t.time "daily_goal_reminder_time", default: "2000-01-01 18:00:00", null: false
     t.integer "default_appointment_lead_minutes", default: 30, null: false
     t.integer "points_per_goal", default: 10, null: false
+    t.integer "streak_bonus_cap", default: 10, null: false
     t.datetime "updated_at", null: false
   end
 
