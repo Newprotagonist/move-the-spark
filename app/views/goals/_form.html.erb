@@ -85,13 +85,38 @@
     </div>
   </label>
 
-  <div class="flex items-center gap-3 pt-2">
+  <% if goal.persisted? && goal.archived? %>
+    <div class="px-4 py-2.5 rounded-2xl bg-line/40 text-dim text-[12.5px] font-semibold text-center">
+      Archivé — n’apparaît plus dans les vues jour/semaine
+    </div>
+  <% end %>
+
+  <div class="pt-2">
     <%= f.submit (goal.persisted? ? "Enregistrer" : "Créer l’objectif"),
-          class: "flex-1 py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>
-    <% if goal.persisted? %>
-      <%= button_to "Supprimer", goal_path(goal), method: :delete,
-            class: "text-[13px] text-red-600 bg-transparent border-0 p-2",
-            form: { data: { turbo_confirm: "Supprimer cet objectif ?", turbo_frame: "_top" } } %>
+          class: "w-full py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>
+  </div>
+<% end %>
+
+<%# These MUST live outside the form_with above: button_to renders its own <form>,
+    and a <form> nested inside another <form> is invalid HTML — the browser drops
+    the inner one, leaving the button to submit the OUTER (goal update) form
+    instead of its own. Only caught by a real-browser test, never by a request
+    spec hitting the route directly. %>
+<% if goal.persisted? %>
+  <div class="flex items-center gap-3 pt-3">
+    <% if goal.recurring? %>
+      <% if goal.archived? %>
+        <%= button_to "Réactiver", unarchive_goal_path(goal), method: :post,
+              class: "text-[13px] text-accent bg-transparent border-0 p-2",
+              form: { data: { turbo_frame: "_top" } } %>
+      <% else %>
+        <%= button_to "Archiver", archive_goal_path(goal), method: :post,
+              class: "text-[13px] text-dim bg-transparent border-0 p-2",
+              form: { data: { turbo_confirm: "Archiver cet objectif ? Il n’apparaîtra plus dans les vues jour/semaine, mais son historique est conservé.", turbo_frame: "_top" } } %>
+      <% end %>
     <% end %>
+    <%= button_to "Supprimer", goal_path(goal), method: :delete,
+          class: "text-[13px] text-red-600 bg-transparent border-0 p-2",
+          form: { data: { turbo_confirm: "Supprimer cet objectif ?", turbo_frame: "_top" } } %>
   </div>
 <% end %>

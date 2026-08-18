@@ -47,6 +47,12 @@
   </div>
 </div>
 
+<%= link_to archived_goals_path,
+      class: "flex items-center justify-between px-4 py-4 rounded-[18px] bg-paper border border-line mb-3" do %>
+  <span class="text-sm font-semibold">Objectifs archivés</span>
+  <span class="text-dim font-mono text-[12px]"><%= @archived_goals_count %> →</span>
+<% end %>
+
 <%= link_to edit_settings_path, data: { turbo_frame: "sheet" },
       class: "flex items-center justify-between px-4 py-4 rounded-[18px] bg-paper border border-line mb-4" do %>
   <span class="text-sm font-semibold">Réglages &amp; notifications</span>

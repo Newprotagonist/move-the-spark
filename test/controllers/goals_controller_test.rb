@@ -342,4 +342,66 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to day_path(date: "2026-08-17")
   end
+
+  test "the schedule route also serves as the unschedule ('retirer du ruban') action" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+
+    patch schedule_goal_path(goal), params: { hour: "", date: "2026-08-17" }, as: :turbo_stream
+
+    assert_nil goal.reload.scheduled_hour
+    assert_no_match "09:00", response.body
+  end
+
+  test "archive stops a recurring goal from being due, keeping its completion history" do
+    goal = Goal.create!(title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    GoalCompletion.create!(goal: goal, occurred_on: Date.new(2026, 8, 5), completed_at: Time.current, points_awarded: 10)
+
+    post archive_goal_path(goal)
+
+    goal.reload
+    assert goal.archived?
+    assert_not_includes Goal.due_on(Date.current + 1), goal
+    assert_equal 1, goal.goal_completions.count
+  end
+
+  test "unarchive makes a goal due again" do
+    goal = Goal.create!(title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
+                         archived_at: (Date.current - 5).beginning_of_day)
+
+    post unarchive_goal_path(goal)
+
+    goal.reload
+    assert_not goal.archived?
+    assert_includes Goal.due_on(Date.current), goal
+  end
+
+  test "archived index lists only archived goals" do
+    archived = Goal.create!(title: "Old habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
+                             archived_at: Date.new(2026, 8, 10).beginning_of_day)
+    Goal.create!(title: "Current habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    get archived_goals_path
+
+    assert_response :success
+    assert_select "body", text: /Old habit/
+    assert_select "body", text: /Current habit/, count: 0
+  end
+
+  test "toggling a goal from a plannable: false context (week view) keeps plannable false on re-render" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17", plannable: "false" }, as: :turbo_stream
+
+    assert_no_match "Caser dans le ruban", response.body
+  end
+
+  test "toggling a goal without a plannable param defaults to plannable true (day view)" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    # No plannable param at all — should default true, same as a fresh day-view render.
+    post uncomplete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_match "Caser dans le ruban", response.body
+  end
 end

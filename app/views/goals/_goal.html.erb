@@ -4,7 +4,7 @@
     <%= button_to(
           completion ? uncomplete_goal_path(goal) : complete_goal_path(goal),
           method: :post,
-          params: { occurred_on: reference_date },
+          params: { occurred_on: reference_date, plannable: plannable },
           class: "shrink-0 flex items-center justify-center p-2.5",
           "aria-label": completion ? "Marquer comme non fait" : "Marquer comme fait",
           form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } }
@@ -24,7 +24,14 @@
           <span class="font-mono text-[9.5px] tracking-[.1em] uppercase px-1.5 py-1 rounded-md bg-line/60 text-dim">chaque jour</span>
         <% end %>
         <% if goal.scheduled_hour.present? %>
-          <span class="font-mono text-[10.5px] text-dim"><%= format("%02d:00", goal.scheduled_hour) %></span>
+          <span class="font-mono text-[10.5px] text-dim inline-flex items-center gap-1">
+            <%= format("%02d:00", goal.scheduled_hour) %>
+            <% if plannable %>
+              <%= button_to "✕", schedule_goal_path(goal), method: :patch, params: { hour: "", date: @date },
+                    class: "text-faint leading-none p-1 -m-1", "aria-label": "Retirer du ruban",
+                    form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
+            <% end %>
+          </span>
         <% end %>
         <% if goal.recurring? && (avg = goal.average_duration_seconds) %>
           <span class="font-mono text-[10.5px] text-dim">≈ <%= (avg / 60).round %> min</span>
@@ -39,7 +46,7 @@
               data-timer-target="display">00:00</span>
       <% end %>
       <%= button_to "⏹", stop_timer_goal_path(goal),
-            method: :post, params: { occurred_on: reference_date }, class: "shrink-0 p-2.5 text-red-600",
+            method: :post, params: { occurred_on: reference_date, plannable: plannable }, class: "shrink-0 p-2.5 text-red-600",
             "aria-label": "Arrêter le chrono",
             form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } } %>
     <% elsif !completion %>

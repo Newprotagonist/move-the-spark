@@ -1,7 +1,7 @@
 class GoalsController < ApplicationController
   include DayScoped
 
-  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :cancel_timer, :focus, :schedule ]
+  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :cancel_timer, :archive, :unarchive, :focus, :schedule ]
   before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
   before_action -> { @fullscreen = true }, only: [ :focus ]
 
@@ -38,6 +38,22 @@ class GoalsController < ApplicationController
   def destroy
     @goal.destroy
     redirect_to redirect_target, notice: "Objectif supprimé."
+  end
+
+  # Stops a recurring goal from being due going forward without losing its
+  # completion history (unlike #destroy, which cascades to GoalCompletion).
+  def archive
+    @goal.update!(archived_at: Time.current)
+    redirect_to redirect_target, notice: "Objectif archivé."
+  end
+
+  def unarchive
+    @goal.update!(archived_at: nil)
+    redirect_to redirect_target, notice: "Objectif réactivé."
+  end
+
+  def archived
+    @archived_goals = Goal.archived.ordered
   end
 
   def complete
@@ -177,11 +193,18 @@ class GoalsController < ApplicationController
       format.turbo_stream do
         load_gamification_summary # points/streak may have changed, refresh after the toggle
         completion = @goal.goal_completions.find_by(occurred_on: occurred_on)
+        # The row's own buttons carry `plannable` as a request param so the
+        # re-rendered row keeps whatever the page it came from intended
+        # (defaults true) — otherwise a week-view row, always rendered with
+        # plannable: false there, would flip back to true on any toggle and
+        # show a "planning" clock icon with no planning controller in scope
+        # to handle it on that page.
+        plannable = params[:plannable] != "false"
         streams = [
           turbo_stream.replace(
             helpers.dom_id(@goal, occurred_on.to_s),
             partial: "goals/goal",
-            locals: { goal: @goal, reference_date: occurred_on, completion: completion }
+            locals: { goal: @goal, reference_date: occurred_on, completion: completion, plannable: plannable }
           ),
           turbo_stream.replace("gamification-summary", partial: "shared/points_pill")
         ]

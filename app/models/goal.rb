@@ -20,6 +20,7 @@ class Goal < ApplicationRecord
   scope :recurring_daily, -> { where(recurring: true, frequency: "daily") }
   scope :recurring_weekly, -> { where(recurring: true, frequency: "weekly") }
   scope :one_off, -> { where(recurring: false) }
+  scope :archived, -> { where.not(archived_at: nil) }
 
   # Goals due on a specific calendar day: active recurring daily goals plus
   # one-off goals scheduled for that exact date.

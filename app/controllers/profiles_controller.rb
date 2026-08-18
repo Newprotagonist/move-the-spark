@@ -4,5 +4,6 @@ class ProfilesController < ApplicationController
     @focus_seconds_this_week = GoalCompletion
       .where(completed_at: Date.current.beginning_of_week.beginning_of_day..Date.current.end_of_week.end_of_day)
       .sum(:duration_seconds)
+    @archived_goals_count = Goal.archived.count
   end
 end

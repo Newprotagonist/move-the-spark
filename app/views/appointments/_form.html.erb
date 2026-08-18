@@ -47,13 +47,18 @@
     <p class="text-xs text-dim mt-1.5">Par défaut : <%= Setting.instance.default_appointment_lead_minutes %> min avant.</p>
   </div>
 
-  <div class="flex items-center gap-3 pt-2">
+  <div class="pt-2">
     <%= f.submit (appointment.persisted? ? "Enregistrer" : "Ajouter au ruban"),
-          class: "flex-1 py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>
-    <% if appointment.persisted? %>
-      <%= button_to "Supprimer", appointment_path(appointment), method: :delete,
-            class: "text-[13px] text-red-600 bg-transparent border-0 p-2",
-            form: { data: { turbo_confirm: "Supprimer ce rendez-vous ?", turbo_frame: "_top" } } %>
-    <% end %>
+          class: "w-full py-3.5 rounded-2xl bg-ink text-paper text-center text-[14.5px] font-semibold" %>
+  </div>
+<% end %>
+
+<%# Outside the form_with above — see the comment in goals/_form.html.erb for why
+    a button_to can't be nested inside another form. %>
+<% if appointment.persisted? %>
+  <div class="flex items-center gap-3 pt-3">
+    <%= button_to "Supprimer", appointment_path(appointment), method: :delete,
+          class: "text-[13px] text-red-600 bg-transparent border-0 p-2",
+          form: { data: { turbo_confirm: "Supprimer ce rendez-vous ?", turbo_frame: "_top" } } %>
   </div>
 <% end %>

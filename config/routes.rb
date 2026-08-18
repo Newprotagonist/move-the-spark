@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   get "weeks", to: "weeks#show", as: :current_week
   get "weeks/:date", to: "weeks#show", as: :week, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
 
+  get "goals/archived", to: "goals#archived", as: :archived_goals
+
   resources :goals, except: [ :index, :show ] do
     member do
       post :complete
@@ -21,6 +23,8 @@ Rails.application.routes.draw do
       post :start_timer
       post :stop_timer
       post :cancel_timer
+      post :archive
+      post :unarchive
       get :focus
       patch :schedule
     end

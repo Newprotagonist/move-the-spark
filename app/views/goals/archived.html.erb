@@ -1,0 +1,29 @@
+<% content_for :title, "Objectifs archivés — Planner" %>
+
+<%= render "shared/screen_header", kicker: "objectifs", title: "Archivés" %>
+
+<% if @archived_goals.empty? %>
+  <p class="text-sm text-dim">Aucun objectif archivé pour l’instant.</p>
+<% else %>
+  <div class="flex flex-col gap-2 mb-4">
+    <% @archived_goals.each do |goal| %>
+      <div class="flex items-center gap-3 bg-paper rounded-2xl border border-line px-3.5 py-3">
+        <div class="flex-1 min-w-0">
+          <p class="truncate text-[14.5px] font-semibold text-dim"><%= goal.title %></p>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="font-mono text-[9.5px] tracking-[.1em] uppercase px-1.5 py-1 rounded-md bg-line/60 text-dim">
+              <%= goal.weekly? ? "chaque semaine" : "chaque jour" %>
+            </span>
+            <span class="font-mono text-[10.5px] text-faint">archivé le <%= l(goal.archived_at.to_date, format: :short) %></span>
+          </div>
+        </div>
+        <%= button_to "Réactiver", unarchive_goal_path(goal), method: :post,
+              class: "shrink-0 font-mono text-[10.5px] text-accent bg-transparent border-0 p-2" %>
+        <%= link_to "Modifier", edit_goal_path(goal), data: { turbo_frame: "sheet" },
+              class: "shrink-0 font-mono text-[10.5px] text-dim p-2" %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= link_to "← Retour", root_path, class: "block mb-4 text-sm text-accent font-medium" %>

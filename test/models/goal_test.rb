@@ -126,4 +126,21 @@ class GoalTest < ActiveSupport::TestCase
     goal.scheduled_hour = nil
     assert goal.valid?
   end
+
+  test "archived scope returns only goals with an archived_at set" do
+    active = Goal.create!(title: "Active", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    archived = Goal.create!(title: "Archived", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
+                             archived_at: Time.zone.local(2026, 8, 10))
+
+    assert_equal [ archived ], Goal.archived.to_a
+    assert_not_includes Goal.archived, active
+  end
+
+  test "due_on excludes an archived goal from the day it was archived onward" do
+    goal = Goal.create!(title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
+                         archived_at: Date.new(2026, 8, 10).beginning_of_day)
+
+    assert_includes Goal.due_on(Date.new(2026, 8, 9)), goal
+    assert_not_includes Goal.due_on(Date.new(2026, 8, 10)), goal
+  end
 end
