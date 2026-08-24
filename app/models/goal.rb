@@ -8,10 +8,12 @@ class Goal < ApplicationRecord
   validates :title, presence: true
   validates :frequency, inclusion: { in: FREQUENCIES }
   validates :scheduled_hour, inclusion: { in: 0..23 }, allow_nil: true
+  validates :scheduled_weekday, inclusion: { in: 0..6 }, allow_nil: true
   validates :active_from, presence: true, if: :recurring?
   validates :scheduled_on, presence: true, unless: :recurring?
   validate :recurring_goals_have_no_scheduled_on
   validate :one_off_goals_are_daily_and_have_no_active_from
+  validate :non_weekly_goals_have_no_scheduled_weekday
 
   scope :ordered, -> { order(:position, :created_at) }
   scope :not_archived_as_of, ->(date) {
@@ -60,6 +62,17 @@ class Goal < ApplicationRecord
     weekly? ? reference_date.beginning_of_week : reference_date
   end
 
+  # Whether this goal is actually due ON `date` itself, not just sometime
+  # during its week: always true outside the weekly case, and for a weekly
+  # goal not pinned to a day (still due every day of its week — unchanged
+  # default). scheduled_weekday is 0=Monday..6=Sunday (matching
+  # beginning_of_week), not Date#wday's 0=Sunday.
+  def due_on_weekday?(date)
+    return true unless weekly?
+
+    scheduled_weekday.nil? || scheduled_weekday == (date - date.beginning_of_week).to_i
+  end
+
   # Matches by title (not goal_id) per spec: an ad-hoc one-off goal retyped
   # with the same title on different days counts toward the same average as
   # a true recurring goal.
@@ -87,5 +100,11 @@ class Goal < ApplicationRecord
 
     errors.add(:frequency, "must be daily for a one-off goal") if frequency.present? && frequency != "daily"
     errors.add(:active_from, "must be blank for a one-off goal") if active_from.present?
+  end
+
+  def non_weekly_goals_have_no_scheduled_weekday
+    return if weekly?
+
+    errors.add(:scheduled_weekday, "must be blank for a non-weekly goal") if scheduled_weekday.present?
   end
 end

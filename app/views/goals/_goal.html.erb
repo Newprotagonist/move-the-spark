@@ -19,7 +19,9 @@
       <p class="truncate text-[14.5px] font-semibold <%= "line-through text-faint" if completion %>"><%= goal.title %></p>
       <div class="flex items-center gap-2 mt-0.5">
         <% if goal.weekly? %>
-          <span class="font-mono text-[9.5px] tracking-[.1em] uppercase px-1.5 py-1 rounded-md bg-accent-soft text-accent-dark">cette semaine</span>
+          <span class="font-mono text-[9.5px] tracking-[.1em] uppercase px-1.5 py-1 rounded-md bg-accent-soft text-accent-dark">
+            <%= goal.scheduled_weekday.present? ? l(reference_date + goal.scheduled_weekday, format: "%a") : "cette semaine" %>
+          </span>
         <% elsif goal.recurring? %>
           <span class="font-mono text-[9.5px] tracking-[.1em] uppercase px-1.5 py-1 rounded-md bg-line/60 text-dim">chaque jour</span>
         <% end %>

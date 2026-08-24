@@ -10,7 +10,7 @@ module DayScoped
   def load_day(date)
     @date = date
     @daily_goals = Goal.due_on(date)
-    @weekly_goals = Goal.due_in_week(date)
+    @weekly_goals = Goal.due_in_week(date).select { |goal| goal.due_on_weekday?(date) }
     @completions = GoalCompletion.index_for(
       (@daily_goals + @weekly_goals).map { |goal| [ goal.id, goal.occurrence_date(date) ] }
     )

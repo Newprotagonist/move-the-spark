@@ -182,12 +182,14 @@ class GoalsController < ApplicationController
   # via #schedule, so editing a goal's title etc. can't accidentally clobber
   # its planned time slot.
   def goal_params
-    permitted = params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from, :timed)
+    permitted = params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from, :timed, :scheduled_weekday)
     if ActiveModel::Type::Boolean.new.cast(permitted[:recurring])
       permitted[:scheduled_on] = nil
+      permitted[:scheduled_weekday] = nil unless permitted[:frequency] == "weekly"
     else
       permitted[:frequency] = nil
       permitted[:active_from] = nil
+      permitted[:scheduled_weekday] = nil
     end
     permitted
   end

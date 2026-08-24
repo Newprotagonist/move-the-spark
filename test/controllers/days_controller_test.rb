@@ -27,6 +27,30 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /cette semaine/i
   end
 
+  test "a weekly goal pinned to a weekday only appears on that day" do
+    monday = Date.new(2026, 8, 17)
+    Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
+
+    get day_path(date: monday + 2) # Wednesday: the pinned day
+    assert_response :success
+    assert_select "body", text: /Yoga/
+
+    get day_path(date: monday + 3) # Thursday: not the pinned day
+    assert_response :success
+    assert_select "body", text: /Yoga/, count: 0
+  end
+
+  test "a weekly goal pinned to a weekday shows its day abbreviation instead of the generic badge" do
+    monday = Date.new(2026, 8, 17)
+    Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
+
+    get day_path(date: monday + 2) # Wednesday
+
+    assert_response :success
+    assert_select "body", text: /mer/i
+    assert_select "body", text: /cette semaine/i, count: 0
+  end
+
   test "navigates to a specific date via the date param" do
     Goal.create!(title: "Old one-off", recurring: false, scheduled_on: Date.new(2026, 1, 1))
 

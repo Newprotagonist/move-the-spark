@@ -46,6 +46,28 @@ class WeeksControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Next week rdv/, count: 0
   end
 
+  test "a pinned weekly goal appears once, in its day section rather than the generic weekly section" do
+    monday = Date.new(2026, 8, 17)
+    Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
+
+    get week_path(date: monday)
+
+    assert_response :success
+    assert_equal 1, response.body.scan("Yoga").length
+    assert_select "body", text: /Aucun objectif hebdomadaire/
+  end
+
+  test "the complete button for a pinned weekly goal in its day section posts occurred_on as the week's Monday, not the pinned day" do
+    monday = Date.new(2026, 8, 17)
+    Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
+
+    get week_path(date: monday)
+
+    assert_response :success
+    assert_select "input[name=occurred_on][value=?]", monday.to_s
+    assert_select "input[name=occurred_on][value=?]", (monday + 2).to_s, count: 0
+  end
+
   test "completing a weekly goal from the week view works" do
     monday = Date.new(2026, 8, 17)
     goal = Goal.create!(title: "Weekly review", recurring: true, frequency: "weekly", active_from: monday - 7)

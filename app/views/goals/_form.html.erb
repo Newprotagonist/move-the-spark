@@ -56,6 +56,24 @@
       <div>
         <%= f.label :frequency, "Fréquence", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
         <%= f.select :frequency, [ [ "Chaque jour", "daily" ], [ "Chaque semaine", "weekly" ] ], {},
+              data: { action: "goal-type#toggle", goal_type_target: "frequencySelect" },
+              class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
+      </div>
+
+      <div data-goal-type-target="weeklyFields" class="space-y-2" data-controller="chip-picker">
+        <%= f.label :scheduled_weekday, "Jour de la semaine (optionnel)", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+        <div class="flex gap-1.5 flex-wrap mb-2">
+          <button type="button" data-chip-picker-target="chip" data-chip-value="" data-action="chip-picker#pick"
+                  class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9">tous les jours</button>
+          <% (0..6).each do |weekday| %>
+            <button type="button" data-chip-picker-target="chip" data-chip-value="<%= weekday %>" data-action="chip-picker#pick"
+                    class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= l(Date.current.beginning_of_week + weekday, format: "%a") %></button>
+          <% end %>
+        </div>
+        <%= f.select :scheduled_weekday,
+              (0..6).map { |weekday| [ l(Date.current.beginning_of_week + weekday, format: "%A").capitalize, weekday ] },
+              { include_blank: "Tous les jours (par défaut)" },
+              data: { "chip-picker-target": "input" },
               class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
       </div>
 

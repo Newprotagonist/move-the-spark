@@ -127,6 +127,56 @@ class GoalTest < ActiveSupport::TestCase
     assert goal.valid?
   end
 
+  test "scheduled_weekday must be within 0..6 when present" do
+    goal = Goal.new(title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
+
+    goal.scheduled_weekday = 7
+    assert_not goal.valid?
+    assert_includes goal.errors[:scheduled_weekday], "n'est pas une valeur autorisée"
+
+    goal.scheduled_weekday = -1
+    assert_not goal.valid?
+
+    goal.scheduled_weekday = 0
+    assert goal.valid?
+
+    goal.scheduled_weekday = 6
+    assert goal.valid?
+
+    goal.scheduled_weekday = nil
+    assert goal.valid?
+  end
+
+  test "scheduled_weekday must be blank for a non-weekly goal" do
+    goal = Goal.new(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_weekday: 2)
+    assert_not goal.valid?
+    assert_includes goal.errors[:scheduled_weekday], "must be blank for a non-weekly goal"
+  end
+
+  test "due_on_weekday? is always true for daily and one-off goals" do
+    daily = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    one_off = Goal.create!(title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17))
+
+    assert daily.due_on_weekday?(Date.new(2026, 8, 17))
+    assert one_off.due_on_weekday?(Date.new(2026, 8, 17))
+  end
+
+  test "due_on_weekday? is true for an unpinned weekly goal on any day of its week" do
+    goal = Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
+
+    (Date.new(2026, 8, 17)..Date.new(2026, 8, 23)).each do |date|
+      assert goal.due_on_weekday?(date), "expected #{date} to be due for an unpinned weekly goal"
+    end
+  end
+
+  test "due_on_weekday? is true only on the pinned day for a pinned weekly goal" do
+    goal = Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1), scheduled_weekday: 2)
+
+    assert_not goal.due_on_weekday?(Date.new(2026, 8, 17)) # Monday
+    assert goal.due_on_weekday?(Date.new(2026, 8, 19)) # Wednesday
+    assert_not goal.due_on_weekday?(Date.new(2026, 8, 20)) # Thursday
+  end
+
   test "archived scope returns only goals with an archived_at set" do
     active = Goal.create!(title: "Active", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     archived = Goal.create!(title: "Archived", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),

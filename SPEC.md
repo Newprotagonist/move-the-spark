@@ -12,6 +12,10 @@ endroit unique pour noter ses rendez-vous.
 - Créer un objectif ponctuel (aujourd'hui) ou récurrent (chaque jour / chaque semaine).
 - Cocher un objectif comme accompli.
 - Distinction visuelle objectifs du jour / objectifs de la semaine.
+  **Mise à jour** : un objectif hebdomadaire peut désormais optionnellement être rattaché à
+  un jour précis de la semaine (et à un horaire, comme un objectif quotidien) au lieu de
+  rester affiché/cochable tous les jours de la semaine. Par défaut (rien renseigné), le
+  comportement initial est conservé.
 
 ### 2. Gamification simple
 - Points gagnés à chaque objectif coché.

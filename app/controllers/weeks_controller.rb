@@ -5,11 +5,16 @@ class WeeksController < ApplicationController
     @previous_week_start = @week_start - 7
     @next_week_start = @week_start + 7
 
-    @weekly_goals = Goal.due_in_week(@week_start)
-    @days = (@week_start..@week_end).map { |date| { date: date, goals: Goal.due_on(date), appointments: Appointment.on_date(date) } }
+    weekly_goals = Goal.due_in_week(@week_start)
+    @weekly_goals, pinned_weekly_goals = weekly_goals.partition { |goal| goal.scheduled_weekday.nil? }
+
+    @days = (@week_start..@week_end).map do |date|
+      pinned_today = pinned_weekly_goals.select { |goal| goal.due_on_weekday?(date) }
+      { date: date, goals: Goal.due_on(date) + pinned_today, appointments: Appointment.on_date(date) }
+    end
 
     pairs = @weekly_goals.map { |goal| [ goal.id, @week_start ] } +
-      @days.flat_map { |day| day[:goals].map { |goal| [ goal.id, day[:date] ] } }
+      @days.flat_map { |day| day[:goals].map { |goal| [ goal.id, goal.occurrence_date(day[:date]) ] } }
     @completions = GoalCompletion.index_for(pairs)
 
     @weekly_streak = StreakCalculator.new(unit: :week, reference_date: @week_start).current_streak
