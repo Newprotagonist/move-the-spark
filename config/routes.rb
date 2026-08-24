@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   get "weeks/:date", to: "weeks#show", as: :week, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
 
   get "goals/archived", to: "goals#archived", as: :archived_goals
+  get "statistiques", to: "stats#show", as: :stats
 
   resources :goals, except: [ :index, :show ] do
     member do
