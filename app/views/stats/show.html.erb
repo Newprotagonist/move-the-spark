@@ -57,7 +57,9 @@
 <div class="rounded-[18px] bg-paper border border-line p-4 mb-4">
   <div class="font-mono text-[10px] tracking-[.16em] uppercase text-dim mb-3">Les moins réalisés</div>
   <% if @stats.bottom_goals.empty? %>
-    <p class="text-sm text-dim">Pas encore assez d’historique.</p>
+    <p class="text-sm text-dim">
+      <%= @stats.top_goals.empty? ? "Pas encore assez d’historique." : "Rien d’autre à afficher ici pour l’instant." %>
+    </p>
   <% else %>
     <div class="flex flex-col gap-2">
       <% @stats.bottom_goals.each do |goal_rate| %>

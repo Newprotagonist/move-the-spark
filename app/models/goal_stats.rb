@@ -51,8 +51,12 @@ class GoalStats
     ranked_goals.first(RANKING_SIZE)
   end
 
+  # Excludes anything already surfaced in #top_goals so a goal is never
+  # shown as both "most" and "least" realized at once — with few active
+  # goals this can leave bottom_goals shorter than RANKING_SIZE, or empty.
   def bottom_goals
-    ranked_goals.last(RANKING_SIZE).reverse
+    top_ids = top_goals.map { |goal_rate| goal_rate.goal.id }
+    ranked_goals.reverse.reject { |goal_rate| top_ids.include?(goal_rate.goal.id) }.first(RANKING_SIZE)
   end
 
   # completed_at (not occurred_on) drives this: occurred_on for a weekly

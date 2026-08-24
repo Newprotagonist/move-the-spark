@@ -31,7 +31,27 @@ class GoalStatsTest < ActiveSupport::TestCase
       stats = GoalStats.new
 
       assert_equal [ "Established" ], stats.top_goals.map { |gr| gr.goal.title }
-      assert_equal [ "Established" ], stats.bottom_goals.map { |gr| gr.goal.title }
+      assert_equal [], stats.bottom_goals.map { |gr| gr.goal.title }
+    end
+  end
+
+  test "bottom_goals never includes a goal already surfaced in top_goals" do
+    travel_to Time.zone.local(2026, 8, 24, 9, 0) do
+      7.times do |i|
+        goal = Goal.create!(title: "Goal #{i}", recurring: true, frequency: "daily", active_from: Date.current - 4, position: i)
+        # Descending completion count per goal: 4, 3, 2, 1, 0, 0, 0 out of 5 occurrences.
+        (0...(4 - i)).each do |days_ago|
+          GoalCompletion.create!(goal: goal, occurred_on: Date.current - days_ago, completed_at: Time.current, points_awarded: 10)
+        end
+      end
+
+      stats = GoalStats.new
+      top_ids = stats.top_goals.map { |gr| gr.goal.id }
+      bottom_ids = stats.bottom_goals.map { |gr| gr.goal.id }
+
+      assert_empty top_ids & bottom_ids
+      assert_equal [ "Goal 0", "Goal 1", "Goal 2", "Goal 3", "Goal 4" ], stats.top_goals.map { |gr| gr.goal.title }
+      assert_equal [ "Goal 6", "Goal 5" ], stats.bottom_goals.map { |gr| gr.goal.title }
     end
   end
 
