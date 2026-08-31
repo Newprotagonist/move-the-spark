@@ -16,10 +16,10 @@
 
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="<%= versioned_icon_path("/favicon.png") %>" type="image/png" sizes="32x32">
+    <link rel="icon" href="<%= versioned_icon_path("/icon.svg") %>" type="image/svg+xml">
+    <link rel="icon" href="<%= versioned_icon_path("/icon-192.png") %>" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="<%= versioned_icon_path("/icon.png") %>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

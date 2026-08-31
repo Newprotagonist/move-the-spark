@@ -39,6 +39,19 @@ module ApplicationHelper
     LEVEL_TIERS.reverse.find { |min, _| level >= min }.last
   end
 
+  # public/icon*.png and favicon.png are plain static files, not
+  # asset-pipeline fingerprinted, and are served with a 1-year
+  # cache-control (config.public_file_server.headers) — so replacing their
+  # content at the same URL is invisible to any browser that already
+  # fetched them (confirmed: a phone that installed the PWA before an icon
+  # update kept showing the old icon indefinitely). Bump ICON_VERSION
+  # whenever these files change to force a re-fetch.
+  ICON_VERSION = 2
+
+  def versioned_icon_path(path)
+    "#{path}?v=#{ICON_VERSION}"
+  end
+
   def relative_day_label(date)
     days = (date - Date.current).to_i
     case days
