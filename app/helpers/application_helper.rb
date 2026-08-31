@@ -25,11 +25,14 @@ module ApplicationHelper
     100 - level_progress_percent(points)
   end
 
-  # Named tiers grouping levels — early ones pass quickly, later ones take
-  # much longer, same shape as most game leveling curves.
+  # Named tiers grouping levels — gaps roughly double each tier (2, 3, 5, 10,
+  # 20, 40), extending the same shape the original 6-tier system already
+  # had. level_for_points is unbounded (100 pts/level, no cap), so widening
+  # the gap each tier keeps the top tier meaningfully far off rather than
+  # reached by nearly everyone within a few weeks.
   LEVEL_TIERS = [
-    [ 1, "Étincelle" ], [ 3, "Élan" ], [ 6, "Rythme" ],
-    [ 11, "Constance" ], [ 21, "Maîtrise" ], [ 41, "Légende" ]
+    [ 1, "Braise" ], [ 3, "Étincelle" ], [ 6, "Flammèche" ],
+    [ 11, "Ardeur" ], [ 21, "Foyer" ], [ 41, "Brasier" ], [ 81, "Phare" ]
   ].freeze
 
   def level_tier_name(level)
