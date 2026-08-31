@@ -30,6 +30,26 @@
   </head>
 
   <body class="bg-bg text-ink font-sans min-h-screen">
+    <%# pointer-events-none so it's purely decorative — a real user tapping
+        during the intro must reach the real UI underneath immediately, not
+        have the tap swallowed for 2.7s. Skipped entirely in the test
+        environment: it's a full-viewport opaque overlay for ~2.3s before
+        it starts fading, which real occlusion-aware WebDriver clicks (not
+        just pointer-events) correctly treat as blocking whatever's under
+        it — exactly the interference a fast, deterministic test suite
+        shouldn't have to work around, and the splash was only ever meant
+        to be verified manually (see the plan's verification section). %>
+    <% unless Rails.env.test? %>
+      <div data-controller="splash"
+           class="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-ink text-paper pointer-events-none animate-[splash-fade-out_2.7s_ease-out_forwards]"
+           aria-hidden="true">
+        <span class="w-16 h-16 animate-[splash-ignite_.6s_ease-out_forwards]">
+          <%= render "shared/spark_glyph", size: "w-16 h-16", color: "bg-accent" %>
+        </span>
+        <div class="font-serif-display text-2xl animate-[splash-wordmark_2.7s_ease-out_forwards]">Move the spark.</div>
+      </div>
+    <% end %>
+
     <% if @sheet || @fullscreen %>
       <%# Sheet forms and the full-screen focus overlay provide their own root
           element directly (see shared/_sheet_shell for why sheets have to:
@@ -84,5 +104,8 @@
 
     <%# Toast notifications get turbo_stream-appended here. %>
     <div id="toasts" class="fixed inset-x-0 top-8 z-50 flex justify-center pointer-events-none"></div>
+
+    <%# Celebration overlays get turbo_stream-appended here, mirroring #toasts. %>
+    <div id="celebration-overlay"></div>
   </body>
 </html>

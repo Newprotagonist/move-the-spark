@@ -63,13 +63,10 @@ class GoalsController < ApplicationController
       c.completed_at = Time.current
       c.points_awarded = Setting.instance.points_per_goal
     end
+    newly_completed = completion.previously_new_record?
 
-    toast = nil
-    if completion.previously_new_record?
-      bonus = award_streak_bonus!(completion, streak_before, current_streak_for(@goal))
-      toast = completion_toast(completion, bonus)
-    end
-    respond_to_toggle(occurred_on, toast: toast)
+    bonus = newly_completed ? award_streak_bonus!(completion, streak_before, current_streak_for(@goal)) : 0
+    respond_to_toggle(occurred_on, completion: completion, newly_completed: newly_completed, bonus: bonus)
   end
 
   def uncomplete
@@ -95,28 +92,32 @@ class GoalsController < ApplicationController
   def stop_timer
     occurred_on = Date.parse(params[:occurred_on])
 
-    toast = nil
+    completion = nil
+    newly_completed = false
+    bonus = 0
     if @goal.timer_running?
       streak_before = current_streak_for(@goal)
-      newly_created = !@goal.goal_completions.exists?(occurred_on: occurred_on)
+      newly_completed = !@goal.goal_completions.exists?(occurred_on: occurred_on)
       duration_seconds = (Time.current - @goal.current_timer_started_at).round
       completion = @goal.goal_completions.find_or_initialize_by(occurred_on: occurred_on)
-      completion.points_awarded = Setting.instance.points_per_goal if newly_created
+      completion.points_awarded = Setting.instance.points_per_goal if newly_completed
       completion.started_at = @goal.current_timer_started_at
       completion.duration_seconds = duration_seconds
       completion.completed_at = Time.current
       completion.save!
       @goal.update!(current_timer_started_at: nil)
 
-      bonus = newly_created ? award_streak_bonus!(completion, streak_before, current_streak_for(@goal)) : 0
-      toast = completion_toast(completion, bonus)
+      bonus = newly_completed ? award_streak_bonus!(completion, streak_before, current_streak_for(@goal)) : 0
       # The flash only reaches the user via format.html (the focus page
       # opts out of Turbo) — guarded so it doesn't leak into the session and
       # surface later when this is really the checklist's turbo_stream path.
-      flash[:notice] = "#{toast} · #{duration_seconds / 60} min" unless request.format.symbol == :turbo_stream
+      # The focus page never renders the celebration overlay (turbo_stream-
+      # only, see #respond_to_toggle), so it always gets the plain toast
+      # text here even on the day's last goal.
+      flash[:notice] = "#{completion_toast(completion, bonus)} · #{duration_seconds / 60} min" unless request.format.symbol == :turbo_stream
     end
 
-    respond_to_toggle(occurred_on, toast: toast)
+    respond_to_toggle(occurred_on, completion: completion, newly_completed: newly_completed, bonus: bonus)
   end
 
   # Abandons an in-progress timer without completing the goal or recording
@@ -219,16 +220,41 @@ class GoalsController < ApplicationController
     bonus
   end
 
+  # Manual pluralization, not Rails' pluralize: it inflects using I18n.locale
+  # (:fr here), and this app defines no French inflection rules, so it
+  # silently returns the singular unchanged regardless of count. The rest of
+  # the app already avoids it for the same reason (see profiles/show and
+  # weeks/show's "jour<%= "s" if ... %>" pattern).
   def completion_toast(completion, bonus)
-    bonus.positive? ? "+#{completion.points_awarded} points (+#{bonus} série !)" : "+#{completion.points_awarded} points"
+    base = "+#{completion.points_awarded} étincelle#{"s" if completion.points_awarded != 1}"
+    bonus.positive? ? "#{base} (+#{bonus} flamme !)" : base
   end
 
-  def respond_to_toggle(occurred_on, toast: nil)
+  # Whether `occurred_on`'s completion is the one that leaves every daily
+  # goal due today fully done — the trigger for the celebration overlay.
+  # Weekly-goal completions never qualify (same @goal.daily? framing as the
+  # ring/ribbon refresh below — a weekly goal's occurred_on isn't "today" in
+  # this sense), and neither does completing a past day's occurrence — the
+  # celebration is about finishing *today*, not backfilling history. Guarded
+  # to fire at most once per calendar day via Setting#last_celebrated_on
+  # (same pattern DailyGoalReminderJob uses for its own once-a-day guard),
+  # so unchecking and rechecking an already-finished day's last goal doesn't
+  # celebrate twice.
+  def celebrate_day_complete?(occurred_on)
+    return false unless @goal.daily? && occurred_on == Date.current
+    return false if Setting.instance.last_celebrated_on == Date.current
+
+    due_today = Goal.due_on(occurred_on)
+    completed_ids = GoalCompletion.where(goal_id: due_today.select(:id), occurred_on: occurred_on).pluck(:goal_id)
+    due_today.all? { |goal| completed_ids.include?(goal.id) }
+  end
+
+  def respond_to_toggle(occurred_on, completion: nil, newly_completed: false, bonus: 0)
     respond_to do |format|
       format.html { redirect_to redirect_target }
       format.turbo_stream do
         load_gamification_summary # points/streak may have changed, refresh after the toggle
-        completion = @goal.goal_completions.find_by(occurred_on: occurred_on)
+        current_completion = @goal.goal_completions.find_by(occurred_on: occurred_on)
         # The row's own buttons carry `plannable` as a request param so the
         # re-rendered row keeps whatever the page it came from intended
         # (defaults true) — otherwise a week-view row, always rendered with
@@ -240,7 +266,7 @@ class GoalsController < ApplicationController
           turbo_stream.replace(
             helpers.dom_id(@goal, occurred_on.to_s),
             partial: "goals/goal",
-            locals: { goal: @goal, reference_date: occurred_on, completion: completion, plannable: plannable }
+            locals: { goal: @goal, reference_date: occurred_on, completion: current_completion, plannable: plannable }
           ),
           turbo_stream.replace("gamification-summary", partial: "shared/points_pill")
         ]
@@ -259,7 +285,15 @@ class GoalsController < ApplicationController
           streams << turbo_stream.replace("progress-ring", partial: "days/progress_ring")
           streams << turbo_stream.replace("day-ribbon", partial: "days/ribbon")
         end
-        streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: toast }) if toast
+
+        if newly_completed && celebrate_day_complete?(occurred_on)
+          Setting.instance.update!(last_celebrated_on: Date.current)
+          streams << turbo_stream.append("celebration-overlay", partial: "shared/celebration_overlay",
+                                          locals: { bonus: bonus, streak: current_streak_for(@goal) })
+        elsif newly_completed
+          streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: completion_toast(completion, bonus) })
+        end
+
         render turbo_stream: streams
       end
     end

@@ -1,0 +1,20 @@
+<div data-controller="celebration"
+     class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[oklch(0.19_0.016_60_/_0.5)] animate-[pop-in_.3s_ease-out]"
+     data-action="click->celebration#close">
+  <div class="relative bg-paper rounded-[26px] px-7 py-9 max-w-[320px] text-center shadow-2xl" data-action="click->celebration#stop">
+    <%= render "shared/spark_glyph", size: "w-10 h-10", color: "bg-accent" %>
+    <div class="font-serif-display text-2xl mt-4">Journée accomplie !</div>
+    <p class="text-sm text-dim mt-2">Tous tes objectifs du jour sont faits.</p>
+    <div class="flex items-center justify-center gap-4 mt-5 font-mono text-sm">
+      <% if bonus.positive? %>
+        <span><%= bonus %> étincelle<%= "s" if bonus != 1 %> en plus</span>
+      <% end %>
+      <span class="flex items-center gap-1.5">
+        <%= render "shared/flame_glyph", size: "w-3 h-3", color: "bg-accent" %>
+        <%= streak %>
+      </span>
+    </div>
+    <button type="button" data-action="celebration#close"
+            class="mt-6 px-5 py-2.5 rounded-full bg-ink text-paper text-sm font-semibold">Continuer</button>
+  </div>
+</div>

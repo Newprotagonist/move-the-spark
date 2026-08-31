@@ -43,3 +43,21 @@ body {
   60% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
+
+@keyframes splash-ignite {
+  0% { transform: scale(.6); opacity: 0; }
+  40% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes splash-wordmark {
+  0%, 40% { opacity: 0; transform: translateY(6px); }
+  60% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes splash-fade-out {
+  0%, 85% { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}

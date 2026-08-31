@@ -241,10 +241,10 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
     post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
-    assert_match "+20 points", response.body
+    assert_match "+20 étincelles", response.body
 
     post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
-    assert_no_match "+20 points", response.body
+    assert_no_match "+20 étincelles", response.body
   end
 
   test "uncomplete does not append a toast" do
@@ -262,7 +262,7 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
 
-    assert_match(/points/, flash[:notice])
+    assert_match(/étincelles/, flash[:notice])
   end
 
   test "stop_timer via turbo_stream format does not leak a flash into the session" do
@@ -409,13 +409,16 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
 
+    # This is also the day's only (and therefore last) daily goal, so the
+    # celebration overlay fires instead of a toast (see the dedicated
+    # celebration tests below) — this test only cares about the bonus math
+    # ending up on the completion row, not which UI element renders it.
     travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
       post complete_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
     end
 
     completion = goal.goal_completions.sole
     assert_equal 11, completion.points_awarded
-    assert_match "+11 points (+1 série !)", response.body
   end
 
   test "completing a goal does not award a bonus when the streak does not grow" do
@@ -429,7 +432,7 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     completion = goal_a.goal_completions.sole
     assert_equal 10, completion.points_awarded
-    assert_no_match "série", response.body
+    assert_no_match "flamme", response.body
   end
 
   test "streak bonus is capped at streak_bonus_cap" do
@@ -460,7 +463,58 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     completion = goal.goal_completions.sole
     assert_equal 11, completion.points_awarded
-    assert_match "série", response.body
+  end
+
+  test "completing the last remaining daily goal of the day shows the celebration overlay instead of a toast" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+    end
+
+    assert_match "celebration-overlay", response.body
+    assert_no_match "rise-fade", response.body # no toast alongside it
+  end
+
+  test "completing a goal that still leaves another daily goal undone does not show the celebration overlay" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal_a = Goal.create!(title: "Habit A", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+    Goal.create!(title: "Habit B", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal_a), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+    end
+
+    assert_no_match "celebration-overlay", response.body
+    assert_match "rise-fade", response.body
+  end
+
+  test "the celebration overlay does not fire twice in the same day after unchecking and rechecking the last goal" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 20))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+      assert_match "celebration-overlay", response.body
+
+      post uncomplete_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+      post complete_goal_path(goal), params: { occurred_on: "2026-08-20" }, as: :turbo_stream
+      assert_no_match "celebration-overlay", response.body
+      assert_match "rise-fade", response.body
+    end
+  end
+
+  test "the celebration overlay does not fire for a retroactive completion of a past day" do
+    Setting.instance.update!(points_per_goal: 10, streak_bonus_cap: 10)
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    travel_to Time.zone.local(2026, 8, 20, 10, 0, 0) do
+      post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+    end
+
+    assert_no_match "celebration-overlay", response.body
+    assert_match "rise-fade", response.body
   end
 
   test "history renders stats and the completion strip for a goal" do
