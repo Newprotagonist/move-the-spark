@@ -1,10 +1,12 @@
-# Planner
+# Move the Spark
 
 Application personnelle de planification (PWA) : objectifs quotidiens/hebdomadaires avec
 gamification simple, rendez-vous, chrono d'objectifs, listes de courses, et rappels par
 notification push. Voir `SPEC.md` et `PLAN.md` pour le détail des choix produit et techniques.
 
-Mono-utilisateur, sans authentification — l'app n'est pas prévue pour être exposée publiquement.
+Mono-utilisateur, sans système de comptes — protégée par un Basic Auth partagé
+(`BASIC_AUTH_USER`/`BASIC_AUTH_PASSWORD`) une fois hébergée publiquement (voir
+`app/controllers/application_controller.rb`).
 
 ## Prérequis
 

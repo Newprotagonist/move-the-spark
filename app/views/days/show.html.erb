@@ -1,4 +1,4 @@
-<% content_for :title, "Planner — #{l(@date, format: :long)}" %>
+<% content_for :title, "Move the Spark — #{l(@date, format: :long)}" %>
 
 <%= render "shared/screen_header", kicker: (@date == Date.current ? "aujourd'hui" : l(@date, format: :short)),
       title: l(@date, format: :long).capitalize %>
