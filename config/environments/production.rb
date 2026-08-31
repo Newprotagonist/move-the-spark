@@ -25,13 +25,17 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
+  config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
 
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  # Skip http-to-https redirect for the default health check endpoint: Kamal's
+  # own healthcheck hits /up over plain HTTP inside the private Docker
+  # network (not through the public HTTPS proxy) — without this exclusion,
+  # force_ssl's redirect would turn that into a 301, which Kamal's deploy
+  # gate doesn't follow, breaking zero-downtime deploys.
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
