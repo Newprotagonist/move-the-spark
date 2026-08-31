@@ -59,6 +59,10 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Loads .env into ENV on boot, so local secrets (e.g. BASIC_AUTH_USER/
+  # BASIC_AUTH_PASSWORD) don't need to be exported by hand every session.
+  gem "dotenv-rails"
 end
 
 group :test do
