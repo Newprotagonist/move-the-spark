@@ -96,4 +96,7 @@ endroit unique pour noter ses rendez-vous.
 - Comment identifier qu'un objectif est "récurrent" pour calculer sa moyenne de durée (même
   titre ? objectif template dupliqué chaque jour/semaine ?).
 - Articles de liste de courses : simple texte libre, ou avec quantité/unité en plus du nom ?
-- Nom de l'application.
+- Nom de l'application. **Tranché** : "Move the Spark" (domaine `movethespark.com`) — en écho
+  à "Étincelle", déjà le nom du premier palier de niveau dans la gamification. Le code
+  (titres de pages, manifest PWA, etc.) utilise encore "Planner" comme nom de travail ; le
+  renommage complet reste à faire.
