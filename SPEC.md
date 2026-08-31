@@ -30,6 +30,12 @@ endroit unique pour noter ses rendez-vous.
   **Mise à jour** : le barème de points inclut désormais un bonus quand une complétion fait
   progresser le streak courant (plafonné par un réglage `streak_bonus_cap`, désactivable à 0) —
   ce qui répond à la question ouverte "bonus pour un streak long ?" ci-dessous.
+  **Mise à jour** : suite à l'import du design "Move the Spark", le système de niveaux passe
+  à 7 paliers (Braise, Étincelle, Flammèche, Ardeur, Foyer, Brasier, Phare — "Flamme" du design
+  original renommé "Ardeur" pour éviter la confusion avec le streak, lui aussi rebaptisé), et
+  le vocabulaire "points"/"série" devient "étincelles"/"flamme" dans toute l'interface. Les
+  badges/récompenses déblocables restent explicitement hors périmètre (voir plus bas) — non
+  implémentés malgré leur présence dans ce même design.
 
 ### 3. Rendez-vous (RDV)
 - Créer un rdv avec titre, date, heure (et lieu/notes optionnels).
