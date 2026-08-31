@@ -26,13 +26,13 @@
 
     <div class="px-4 py-4 rounded-2xl bg-paper border border-line" data-controller="chip-picker">
       <div class="flex items-baseline justify-between">
-        <%= f.label :points_per_goal, "Points par objectif", class: "text-[13.5px] font-semibold" %>
-        <span class="font-mono text-[13px] text-accent"><%= @setting.points_per_goal %> pts</span>
+        <%= f.label :points_per_goal, "Étincelles par objectif", class: "text-[13.5px] font-semibold" %>
+        <span class="font-mono text-[13px] text-accent"><%= @setting.points_per_goal %> étincelles</span>
       </div>
       <div class="flex gap-1.5 mt-3 flex-wrap">
         <% [ 5, 10, 15, 25 ].each do |v| %>
           <button type="button" data-chip-picker-target="chip" data-chip-value="<%= v %>" data-action="chip-picker#pick"
-                  class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= v %> pts</button>
+                  class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= v %> étincelles</button>
         <% end %>
       </div>
       <%= f.number_field :points_per_goal, min: 1, data: { "chip-picker-target": "input" },
@@ -72,14 +72,14 @@
 
     <div class="px-4 py-4 rounded-2xl bg-paper border border-line" data-controller="chip-picker">
       <div class="flex items-baseline justify-between">
-        <%= f.label :streak_bonus_cap, "Bonus de série", class: "text-[13.5px] font-semibold" %>
-        <span class="font-mono text-[13px] text-accent"><%= @setting.streak_bonus_cap %> pts max</span>
+        <%= f.label :streak_bonus_cap, "Bonus de flamme", class: "text-[13.5px] font-semibold" %>
+        <span class="font-mono text-[13px] text-accent"><%= @setting.streak_bonus_cap %> étincelles max</span>
       </div>
-      <p class="text-[11.5px] text-dim mt-1">Points en plus quand ta série s'allonge. 0 pour désactiver.</p>
+      <p class="text-[11.5px] text-dim mt-1">Étincelles en plus quand ta flamme s'allonge. 0 pour désactiver.</p>
       <div class="flex gap-1.5 mt-3 flex-wrap">
         <% [ 0, 5, 10, 20 ].each do |v| %>
           <button type="button" data-chip-picker-target="chip" data-chip-value="<%= v %>" data-action="chip-picker#pick"
-                  class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= v %> pts</button>
+                  class="px-3.5 py-2 rounded-full text-[12.5px] font-semibold border border-line bg-paper min-h-9"><%= v %> étincelles</button>
         <% end %>
       </div>
       <%= f.number_field :streak_bonus_cap, min: 0, data: { "chip-picker-target": "input" },

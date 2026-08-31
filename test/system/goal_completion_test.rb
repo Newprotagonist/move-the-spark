@@ -11,15 +11,17 @@ class GoalCompletionTest < ApplicationSystemTestCase
     click_on "Créer"
 
     assert_text "Lire 20 minutes"
-    assert_text "⭐ 0"
-    assert_text "🔥 0"
+    within "#gamification-summary" do
+      assert_text(/0\s*0/)
+    end
 
     click_button "Marquer comme fait"
 
     assert_text "Lire 20 minutes"
     # 10 points + a 1-point streak bonus: this completion is what grows the
     # streak from 0 to 1.
-    assert_text "⭐ 11"
-    assert_text "🔥 1"
+    within "#gamification-summary" do
+      assert_text(/11\s*1/)
+    end
   end
 end

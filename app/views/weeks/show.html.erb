@@ -24,8 +24,9 @@
     <% end %>
   </div>
 
-  <div class="text-[12.5px] opacity-70 leading-relaxed">
-    🔥 <%= @weekly_streak %> semaine<%= "s" if @weekly_streak != 1 %> de suite
+  <div class="text-[12.5px] opacity-70 leading-relaxed flex items-center gap-1.5">
+    <%= render "shared/flame_glyph", size: "w-2.5 h-2.5", color: "bg-accent" %>
+    <%= @weekly_streak %> semaine<%= "s" if @weekly_streak != 1 %> de suite
     · <%= @weekly_goals.count { |g| @completions[[ g.id, @week_start ]] } %>/<%= @weekly_goals.size %> objectifs de la semaine
     · <%= @days.sum { |d| d[:appointments].size } %> rendez-vous
   </div>

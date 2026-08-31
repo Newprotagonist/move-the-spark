@@ -8,7 +8,7 @@
   <div class="relative font-mono text-[10px] tracking-[.16em] uppercase opacity-60">Total</div>
   <div class="relative flex items-baseline gap-2 mt-2">
     <span class="font-serif-display text-[58px] leading-none"><%= @total_points %></span>
-    <span class="text-[13px] opacity-70">points</span>
+    <span class="text-[13px] opacity-70">étincelles</span>
   </div>
 
   <div class="relative flex items-center gap-2.5 mt-[18px]">
@@ -19,7 +19,7 @@
   </div>
   <div class="relative text-xs opacity-60 mt-2">
     <span class="font-semibold opacity-90"><%= level_tier_name(level_for_points(@total_points)) %></span>
-    · <%= points_to_next_level(@total_points) %> points avant le niveau <%= level_for_points(@total_points) + 1 %>
+    · <%= points_to_next_level(@total_points) %> étincelles avant le niveau <%= level_for_points(@total_points) + 1 %>
   </div>
 </div>
 
