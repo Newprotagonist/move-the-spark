@@ -78,6 +78,11 @@ endroit unique pour noter ses rendez-vous.
   planifié/scheduler pour les rappels).
 - Hébergement : à définir en phase de plan (ex. Render ou Fly.io).
 - Pas d'authentification (accès mono-utilisateur, URL non partagée).
+  **Mise à jour** : ajout d'un Basic Auth (identifiant/mot de passe unique, partagé) devant
+  toute l'application une fois hébergée publiquement — une protection de défense en
+  profondeur en plus du secret de l'URL, pas un vrai système de comptes. Désactivé par défaut
+  (aucun effet en local/tests tant que `BASIC_AUTH_USER`/`BASIC_AUTH_PASSWORD` ne sont pas
+  définis).
 
 ## Questions ouvertes à trancher en phase de plan
 
