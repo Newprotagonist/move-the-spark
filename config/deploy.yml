@@ -2,7 +2,7 @@
 service: planner
 
 # Name of the container image (use your-user/app-name on external registries).
-image: planner
+image: newprotagonist/planner
 
 # Deploy to these servers.
 servers:
