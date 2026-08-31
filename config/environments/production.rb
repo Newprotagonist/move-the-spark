@@ -84,11 +84,11 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  config.hosts = [ "movethespark.com" ]
+
+  # Skip DNS rebinding protection for the default health check endpoint: Kamal's
+  # healthcheck hits the container directly (not via the public hostname), so without
+  # this exclusion it would get rejected as a Blocked Host and break deploys — the
+  # same reasoning as the /up exclusion from the force_ssl redirect above.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
