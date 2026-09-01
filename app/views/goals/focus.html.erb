@@ -27,7 +27,7 @@
   <div class="w-full mt-1">
     <%= button_to "Terminé", stop_timer_goal_path(@goal), method: :post,
           params: { occurred_on: @occurred_on, return_to: day_path(date: @occurred_on) },
-          class: "w-full py-4 rounded-2xl bg-success text-[oklch(0.1_0.02_155)] text-center text-[14px] font-bold",
+          class: "w-full py-4 rounded-2xl bg-accent text-[oklch(0.2_0.03_40)] text-center text-[14px] font-bold",
           form: { data: { turbo: false } } %>
   </div>
 

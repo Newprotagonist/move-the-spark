@@ -20,7 +20,7 @@
   <% else %>
     <div class="grid grid-cols-7 gap-1.5">
       <% @occurrences.each do |occurrence| %>
-        <div class="aspect-square rounded-[5px] <%= occurrence.done ? "bg-success" : "bg-line/50" %>"
+        <div class="aspect-square rounded-[5px] <%= occurrence.done ? "bg-accent" : "bg-line/50" %>"
              title="<%= l(occurrence.date, format: :default) %>"></div>
       <% end %>
     </div>

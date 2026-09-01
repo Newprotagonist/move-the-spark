@@ -10,7 +10,7 @@
           form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } }
         ) do %>
       <span class="inline-flex h-[26px] w-[26px] items-center justify-center rounded-full text-xs font-bold
-                   <%= completion ? "bg-success text-white" : "border-[1.5px] border-line/90 text-transparent" %>">
+                   <%= completion ? "bg-accent text-[oklch(0.2_0.03_40)]" : "border-[1.5px] border-line/90 text-transparent" %>">
         ✓
       </span>
     <% end %>

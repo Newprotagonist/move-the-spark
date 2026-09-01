@@ -26,9 +26,9 @@
             <% completion = @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
             <%# Read-only here — mark complete from the checklist above, which
                 stays the single source of truth for a goal's done state. %>
-            <div class="my-0.5 px-3 py-2.5 rounded-[13px] border <%= completion ? "border-success/40 bg-success-soft" : "border-line bg-[oklch(0.97_0.008_80)]" %>">
+            <div class="my-0.5 px-3 py-2.5 rounded-[13px] border <%= completion ? "border-accent/40 bg-accent-soft" : "border-line bg-[oklch(0.97_0.008_80)]" %>">
               <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0 <%= completion ? "bg-success" : "bg-accent" %>"></span>
+                <span class="w-1.5 h-1.5 rounded-full shrink-0 <%= completion ? "bg-accent" : "bg-line" %>"></span>
                 <span class="text-[13.5px] font-semibold flex-1 min-w-0 truncate <%= "line-through opacity-60" if completion %>"><%= goal.title %></span>
               </div>
             </div>

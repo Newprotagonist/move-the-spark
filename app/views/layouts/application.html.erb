@@ -60,7 +60,7 @@
       <main class="max-w-[520px] mx-auto px-4 pb-28">
         <% flash.each do |type, message| %>
           <div role="status" aria-live="polite"
-               class="mt-4 rounded-2xl px-4 py-3 text-sm <%= type.to_s == "alert" ? "bg-red-100 text-red-800" : "bg-success-soft text-ink" %>">
+               class="mt-4 rounded-2xl px-4 py-3 text-sm <%= type.to_s == "alert" ? "bg-red-100 text-red-800" : "bg-accent-soft text-ink" %>">
             <%= message %>
           </div>
         <% end %>

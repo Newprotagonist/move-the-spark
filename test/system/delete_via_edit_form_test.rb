@@ -17,7 +17,11 @@ class DeleteViaEditFormTest < ApplicationSystemTestCase
   end
 
   test "deleting an appointment from its edit sheet actually deletes it" do
-    Appointment.create!(title: "À annuler", starts_at: Time.current.change(hour: 14))
+    # 1 hour out, not a fixed hour like "14:00" — the appointments index only
+    # lists upcoming ones (Appointment.upcoming, starts_at >= Time.current),
+    # so a fixed hour becomes flaky and fails outright once the wall clock
+    # passes it later the same day.
+    Appointment.create!(title: "À annuler", starts_at: 1.hour.from_now)
 
     # Not reachable from the day view's ribbon (read-only cards there, by
     # design) — the appointments index is where "Modifier" lives.
