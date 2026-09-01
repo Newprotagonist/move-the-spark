@@ -7,8 +7,26 @@ class PushSubscription < ApplicationRecord
   validates :auth_key, presence: true
 
   # Sends the same notification to every subscribed device.
+  #
+  # icon: the app logo shown in the notification body. badge: a small
+  # monochrome silhouette (transparent background, opaque shape — Android
+  # tints it and shows it in the status bar) rather than reusing the
+  # full-color icon, which Android would otherwise flatten into a solid
+  # colored blob. Both versioned the same way as the static <link> icons
+  # (see ApplicationHelper::ICON_VERSION) — these URLs get the same
+  # 1-year cache-control as any other public/ file, so an icon update
+  # needs the same cache-busting or already-delivered notifications (and
+  # the OS's own icon cache) keep showing the old one.
   def self.broadcast(title:, body:, path: "/")
-    payload = { title: title, options: { body: body, data: { path: path } } }.to_json
+    payload = {
+      title: title,
+      options: {
+        body: body,
+        icon: "/icon-192.png?v=#{ApplicationHelper::ICON_VERSION}",
+        badge: "/badge-96.png?v=#{ApplicationHelper::ICON_VERSION}",
+        data: { path: path }
+      }
+    }.to_json
     find_each { |subscription| subscription.deliver(payload) }
   end
 

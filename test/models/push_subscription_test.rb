@@ -53,4 +53,18 @@ class PushSubscriptionTest < ActiveSupport::TestCase
 
     assert_equal [ "https://push.example/1", "https://push.example/2" ], delivered_to.sort
   end
+
+  test "broadcast includes the app icon and a monochrome badge so the notification shows the real logo" do
+    PushSubscription.create!(endpoint: "https://push.example/1", p256dh_key: "a", auth_key: "b")
+
+    sent_message = nil
+    Webpush.stub(:payload_send, ->(**kwargs) { sent_message = kwargs[:message] }) do
+      PushSubscription.broadcast(title: "Titre", body: "Corps", path: "/moi")
+    end
+
+    options = JSON.parse(sent_message)["options"]
+    assert_equal "/icon-192.png?v=#{ApplicationHelper::ICON_VERSION}", options["icon"]
+    assert_equal "/badge-96.png?v=#{ApplicationHelper::ICON_VERSION}", options["badge"]
+    assert_equal "/moi", options["data"]["path"]
+  end
 end
