@@ -72,4 +72,12 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Dentiste/
     assert_select "body", text: /Other day rdv/, count: 0
   end
+
+  test "wires the swipe-nav controller to the previous and next day" do
+    get day_path(date: "2026-08-17")
+
+    assert_response :success
+    assert_select "[data-controller='swipe-nav'][data-swipe-nav-previous-url-value=?]", day_path(date: "2026-08-16")
+    assert_select "[data-controller='swipe-nav'][data-swipe-nav-next-url-value=?]", day_path(date: "2026-08-18")
+  end
 end

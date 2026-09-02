@@ -3,11 +3,20 @@
 <%= render "shared/screen_header", kicker: (@date == Date.current ? "aujourd'hui" : l(@date, format: :short)),
       title: l(@date, format: :long).capitalize %>
 
-<%= render "progress_ring" %>
-
 <div data-controller="planning" class="relative">
-  <%= render "checklist" %>
-  <%= render "ribbon" %>
+  <%# Swipe-nav wraps only the visually-swipeable content, not cancelBar
+      below: applying a CSS transform to an ancestor turns it into the
+      containing block for any position:fixed descendant, which would
+      break cancelBar's fixed-to-viewport positioning mid-drag. %>
+  <div data-controller="swipe-nav"
+       data-swipe-nav-previous-url-value="<%= day_path(date: @previous_date) %>"
+       data-swipe-nav-next-url-value="<%= day_path(date: @next_date) %>"
+       data-action="touchstart->swipe-nav#start touchmove->swipe-nav#move touchend->swipe-nav#end"
+       class="animate-[swipe-enter_.25s_ease-out]">
+    <%= render "progress_ring" %>
+    <%= render "checklist" %>
+    <%= render "ribbon" %>
+  </div>
 
   <%= form_with url: "/goals/0/schedule", method: :patch, data: { planning_target: "form" }, class: "hidden" do |f| %>
     <%= f.hidden_field :hour, data: { "planning-target": "hourField" } %>

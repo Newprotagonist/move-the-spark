@@ -77,4 +77,14 @@ class WeeksControllerTest < ActionDispatch::IntegrationTest
     end
     assert_equal monday, goal.goal_completions.sole.occurred_on
   end
+
+  test "wires the swipe-nav controller to the previous and next week" do
+    monday = Date.new(2026, 8, 17)
+
+    get week_path(date: monday)
+
+    assert_response :success
+    assert_select "[data-controller='swipe-nav'][data-swipe-nav-previous-url-value=?]", week_path(date: monday - 7)
+    assert_select "[data-controller='swipe-nav'][data-swipe-nav-next-url-value=?]", week_path(date: monday + 7)
+  end
 end

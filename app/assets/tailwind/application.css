@@ -44,6 +44,11 @@ body {
   100% { transform: scale(1); }
 }
 
+@keyframes swipe-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes splash-ignite {
   0% { transform: scale(.6); opacity: 0; }
   40% { transform: scale(1.08); opacity: 1; }
