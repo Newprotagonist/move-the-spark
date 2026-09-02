@@ -36,6 +36,14 @@ endroit unique pour noter ses rendez-vous.
   le vocabulaire "points"/"série" devient "étincelles"/"flamme" dans toute l'interface. Les
   badges/récompenses déblocables restent explicitement hors périmètre (voir plus bas) — non
   implémentés malgré leur présence dans ce même design.
+  **Mise à jour** : suite à l'import d'une itération plus poussée du même design, une flamme
+  animée (partagée via une seule partial `shared/flame_body`) illustre désormais la progression
+  à quatre endroits : le cochage d'un objectif (petite salve d'étincelles), l'écran Focus
+  (grossit avec la session en cours), le profil ("Ton foyer", taille liée au niveau), et l'écran
+  de célébration de fin de journée (désormais plein écran, avec confettis). L'écran Focus gagne
+  aussi une pause/reprise (nouvelle colonne `timer_paused_at` sur `goals`), revenant sur la
+  décision précédente de ne pas l'implémenter. Les trophées/badges, à nouveau présents dans ce
+  design plus récent, restent explicitement hors périmètre.
 
 ### 3. Rendez-vous (RDV)
 - Créer un rdv avec titre, date, heure (et lieu/notes optionnels).

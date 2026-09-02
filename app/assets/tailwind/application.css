@@ -66,3 +66,52 @@ body {
   0%, 85% { opacity: 1; }
   100% { opacity: 0; pointer-events: none; }
 }
+
+/* Living-flame visuals (checkbox burst, Focus screen, profile hero,
+   celebration) — each blob layer flickers on its own cycle so the flame
+   reads as organic rather than a single uniform pulse. */
+@keyframes flame-a {
+  0%, 100% { transform: rotate(-45deg) scale(1,1); }
+  26% { transform: rotate(-48deg) scale(.93,1.09); }
+  58% { transform: rotate(-42deg) scale(1.06,.94); }
+  80% { transform: rotate(-46deg) scale(.98,1.03); }
+}
+@keyframes flame-b {
+  0%, 100% { transform: rotate(-45deg) scale(1,1); }
+  32% { transform: rotate(-41deg) scale(1.07,.93); }
+  68% { transform: rotate(-50deg) scale(.91,1.09); }
+}
+@keyframes flame-c {
+  0%, 100% { transform: rotate(-45deg) scale(1,1); opacity: 1; }
+  38% { transform: rotate(-44deg) scale(.88,1.14); opacity: .72; }
+  72% { transform: rotate(-47deg) scale(1.1,.9); opacity: .95; }
+}
+@keyframes swell {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+@keyframes flame-up {
+  0% { opacity: 0; transform: scale(.14); }
+  20% { opacity: 1; transform: scale(1.06); }
+  46% { transform: scale(.92); }
+  68% { opacity: .9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.28); }
+}
+@keyframes ember-fly {
+  0% { opacity: 0; transform: translate(0,0) scale(.5); }
+  18% { opacity: 1; transform: translate(0,-4px) scale(1); }
+  100% { opacity: 0; transform: translate(var(--drift,0px), calc(var(--rise,30px) * -1)) scale(.14); }
+}
+@keyframes ripple {
+  0% { transform: scale(.35); opacity: .5; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes confetti-fall {
+  0% { opacity: 0; transform: translateY(-24px) rotate(0); }
+  14% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(420px) rotate(560deg); }
+}
+@keyframes grow-up {
+  from { transform: scaleY(.04); }
+  to { transform: scaleY(1); }
+}

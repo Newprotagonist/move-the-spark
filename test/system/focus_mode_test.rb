@@ -18,6 +18,34 @@ class FocusModeTest < ApplicationSystemTestCase
     assert goal.goal_completions.exists?
   end
 
+  test "pausing then resuming keeps the recorded duration accurate before finishing" do
+    Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
+
+    visit root_path
+    click_link "Démarrer le focus"
+
+    assert_text "Pause"
+    click_on "Pause"
+
+    # assert_text waits/retries until the post-redirect page has actually
+    # loaded — checking the DB state before that (a plain Ruby call, not
+    # Capybara-synchronized) can race the real browser's navigation.
+    assert_text "Reprendre"
+    assert_text "en pause"
+    goal = Goal.find_by(title: "Lire")
+    assert goal.reload.timer_paused?
+
+    click_on "Reprendre"
+
+    assert_text "en cours"
+    assert_not goal.reload.timer_paused?
+
+    click_on "Terminé"
+
+    assert_current_path day_path(date: Date.current)
+    assert goal.goal_completions.exists?
+  end
+
   test "closing without saving does not complete the goal" do
     Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
 

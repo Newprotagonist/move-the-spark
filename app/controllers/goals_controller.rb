@@ -1,7 +1,7 @@
 class GoalsController < ApplicationController
   include DayScoped
 
-  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :stop_timer, :cancel_timer, :archive, :unarchive, :focus, :history, :schedule ]
+  before_action :set_goal, only: [ :edit, :update, :destroy, :complete, :uncomplete, :start_timer, :pause_timer, :resume_timer, :stop_timer, :cancel_timer, :archive, :unarchive, :focus, :history, :schedule ]
   before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
   before_action -> { @fullscreen = true }, only: [ :focus ]
 
@@ -86,6 +86,27 @@ class GoalsController < ApplicationController
     respond_to_toggle(occurred_on)
   end
 
+  # Freezes the running timer's elapsed time without losing it: the actual
+  # duration recorded on #stop_timer is computed from current_timer_started_at,
+  # so the pause itself has to be persisted (not just a paused JS interval) or
+  # wall-clock time spent paused would leak into the recorded duration.
+  def pause_timer
+    @goal.update!(timer_paused_at: Time.current) if @goal.timer_running? && !@goal.timer_paused?
+    redirect_to focus_goal_path(@goal, occurred_on: params[:occurred_on])
+  end
+
+  # Shifts current_timer_started_at forward by however long the timer was
+  # paused, so elapsed-time math everywhere else (#stop_timer, the focus
+  # view, the JS ticker) stays correct without needing a separate
+  # accumulated-duration column.
+  def resume_timer
+    if @goal.timer_paused?
+      @goal.update!(current_timer_started_at: @goal.current_timer_started_at + (Time.current - @goal.timer_paused_at),
+                     timer_paused_at: nil)
+    end
+    redirect_to focus_goal_path(@goal, occurred_on: params[:occurred_on])
+  end
+
   # Stopping the timer both logs the elapsed duration and completes the
   # goal for this occurrence (spec: duration is only ever recorded "each
   # time a timed goal is realized").
@@ -98,14 +119,17 @@ class GoalsController < ApplicationController
     if @goal.timer_running?
       streak_before = current_streak_for(@goal)
       newly_completed = !@goal.goal_completions.exists?(occurred_on: occurred_on)
-      duration_seconds = (Time.current - @goal.current_timer_started_at).round
+      # If stopped while paused (rather than resuming first), the elapsed
+      # time is frozen as of the pause, not wall-clock time to now.
+      stop_reference = @goal.timer_paused? ? @goal.timer_paused_at : Time.current
+      duration_seconds = (stop_reference - @goal.current_timer_started_at).round
       completion = @goal.goal_completions.find_or_initialize_by(occurred_on: occurred_on)
       completion.points_awarded = Setting.instance.points_per_goal if newly_completed
       completion.started_at = @goal.current_timer_started_at
       completion.duration_seconds = duration_seconds
       completion.completed_at = Time.current
       completion.save!
-      @goal.update!(current_timer_started_at: nil)
+      @goal.update!(current_timer_started_at: nil, timer_paused_at: nil)
 
       bonus = newly_completed ? award_streak_bonus!(completion, streak_before, current_streak_for(@goal)) : 0
       # The flash only reaches the user via format.html (the focus page
@@ -123,7 +147,7 @@ class GoalsController < ApplicationController
   # Abandons an in-progress timer without completing the goal or recording
   # any duration ("Fermer sans enregistrer" on the focus screen).
   def cancel_timer
-    @goal.update!(current_timer_started_at: nil)
+    @goal.update!(current_timer_started_at: nil, timer_paused_at: nil)
     occurred_on = Date.parse(params[:occurred_on])
     respond_to_toggle(occurred_on)
   end
@@ -266,7 +290,7 @@ class GoalsController < ApplicationController
           turbo_stream.replace(
             helpers.dom_id(@goal, occurred_on.to_s),
             partial: "goals/goal",
-            locals: { goal: @goal, reference_date: occurred_on, completion: current_completion, plannable: plannable }
+            locals: { goal: @goal, reference_date: occurred_on, completion: current_completion, plannable: plannable, bursting: newly_completed }
           ),
           turbo_stream.replace("gamification-summary", partial: "shared/points_pill")
         ]
@@ -289,7 +313,7 @@ class GoalsController < ApplicationController
         if newly_completed && celebrate_day_complete?(occurred_on)
           Setting.instance.update!(last_celebrated_on: Date.current)
           streams << turbo_stream.append("celebration-overlay", partial: "shared/celebration_overlay",
-                                          locals: { bonus: bonus, streak: current_streak_for(@goal) })
+                                          locals: { bonus: bonus, streak: current_streak_for(@goal), total: Goal.due_on(occurred_on).size })
         elsif newly_completed
           streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: completion_toast(completion, bonus) })
         end

@@ -142,6 +142,83 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "pause_timer freezes the running timer" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 5, 0) do
+      post pause_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    goal.reload
+    assert goal.timer_paused?
+    assert_equal Time.zone.local(2026, 8, 17, 10, 5, 0), goal.timer_paused_at
+  end
+
+  test "pause_timer is a no-op when already paused or not running" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    post pause_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    assert_not goal.reload.timer_paused?
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 5, 0) do
+      post pause_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 8, 0) do
+      post pause_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    assert_equal Time.zone.local(2026, 8, 17, 10, 5, 0), goal.reload.timer_paused_at
+  end
+
+  test "resume_timer shifts current_timer_started_at forward by the paused span and clears the pause" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 5, 0) do
+      post pause_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 20, 0) do
+      post resume_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    goal.reload
+    assert_not goal.timer_paused?
+    # Started at 10:00, paused for 15 min (10:05 → 10:20), so the effective
+    # start shifts to 10:15 — stopping 10 min after resuming (at 10:30)
+    # should record only 15 min elapsed, not 30.
+    assert_equal Time.zone.local(2026, 8, 17, 10, 15, 0), goal.current_timer_started_at
+
+    travel_to Time.zone.local(2026, 8, 17, 10, 30, 0) do
+      post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    assert_equal 15 * 60, goal.goal_completions.sole.duration_seconds
+  end
+
+  test "stopping the timer while paused records the duration frozen at the pause, not wall-clock time to now" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    travel_to Time.zone.local(2026, 8, 17, 10, 0, 0) do
+      post start_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 10, 0) do
+      post pause_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+    travel_to Time.zone.local(2026, 8, 17, 10, 40, 0) do
+      post stop_timer_goal_path(goal), params: { occurred_on: "2026-08-17" }
+    end
+
+    goal.reload
+    assert_not goal.timer_paused?
+    assert_equal 10 * 60, goal.goal_completions.sole.duration_seconds
+  end
+
   test "focus starts the timer if it isn't already running" do
     goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
@@ -245,6 +322,25 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
     assert_no_match "+20 étincelles", response.body
+  end
+
+  test "complete renders the completion burst only on the toggle that caused it, not on a no-op repeat" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+    assert_match "flame-up", response.body
+
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+    assert_no_match "flame-up", response.body
+  end
+
+  test "uncomplete does not render the completion burst" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    post complete_goal_path(goal), params: { occurred_on: "2026-08-17" }
+
+    post uncomplete_goal_path(goal), params: { occurred_on: "2026-08-17" }, as: :turbo_stream
+
+    assert_no_match "flame-up", response.body
   end
 
   test "uncomplete does not append a toast" do

@@ -2,35 +2,59 @@
 
 <%= render "shared/screen_header", kicker: "profil", title: "Ta progression" %>
 
-<div class="relative overflow-hidden rounded-[22px] bg-ink text-paper p-5 mb-4">
-  <div class="absolute -right-10 -top-10 w-[150px] h-[150px] rounded-full bg-accent opacity-20"></div>
-
-  <div class="relative font-mono text-[10px] tracking-[.16em] uppercase opacity-60">Total</div>
-  <div class="relative flex items-baseline gap-2 mt-2">
-    <span class="font-serif-display text-[58px] leading-none"><%= @total_points %></span>
-    <span class="text-[13px] opacity-70">étincelles</span>
+<div class="relative overflow-hidden rounded-[22px] bg-ink text-paper p-5 pb-6 mb-4">
+  <div class="relative flex items-center justify-between font-mono text-[9.5px] tracking-[.18em] uppercase">
+    <span class="opacity-45">Ton foyer</span>
+    <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10">
+      <span class="opacity-50">niv.</span> <span><%= level_for_points(@total_points) %></span>
+    </span>
   </div>
 
-  <div class="relative flex items-center gap-2.5 mt-[18px]">
-    <div class="flex-1 h-1.5 rounded-full bg-white/15 overflow-hidden">
+  <div class="relative h-[150px] flex items-end justify-center my-1">
+    <%= render "shared/flame_body", intensity: level_progress_percent(@total_points) / 100.0 %>
+  </div>
+
+  <div class="relative text-center">
+    <div class="font-serif-display text-[28px] leading-none"><%= level_tier_name(level_for_points(@total_points)) %></div>
+    <div class="flex items-baseline justify-center gap-1.5 mt-1.5">
+      <span class="font-mono text-lg"><%= @total_points %></span>
+      <span class="text-xs opacity-55">étincelles</span>
+    </div>
+  </div>
+
+  <div class="relative mt-3.5">
+    <div class="h-1.5 rounded-full bg-white/15 overflow-hidden">
       <div class="h-full bg-accent transition-[width]" style="width: <%= level_progress_percent(@total_points) %>%"></div>
     </div>
-    <span class="font-mono text-[10.5px] opacity-80 shrink-0">NIV. <%= level_for_points(@total_points) %></span>
-  </div>
-  <div class="relative text-xs opacity-60 mt-2">
-    <span class="font-semibold opacity-90"><%= level_tier_name(level_for_points(@total_points)) %></span>
-    · <%= points_to_next_level(@total_points) %> étincelles avant le niveau <%= level_for_points(@total_points) + 1 %>
+    <div class="font-mono text-[10px] opacity-50 mt-2 text-center">
+      <%= points_to_next_level(@total_points) %> étincelles avant le niveau <%= level_for_points(@total_points) + 1 %>
+    </div>
   </div>
 </div>
 
 <div class="flex gap-2.5 mb-4">
   <div class="flex-1 rounded-[18px] bg-paper border border-line p-3.5">
-    <div class="font-serif-display text-[30px] leading-none"><%= @daily_streak %></div>
-    <div class="text-[11.5px] text-dim mt-1">jour<%= "s" if @daily_streak != 1 %> de suite</div>
+    <div class="font-mono text-[9.5px] tracking-[.14em] uppercase text-dim">Jours de suite</div>
+    <div class="flex items-end gap-1 h-[34px] mt-2.5">
+      <% [ 58, 70, 64, 82, 76, 94, 100 ].each_with_index do |bar_height, i| %>
+        <% bar_on = i < [ @daily_streak, 7 ].min %>
+        <span class="flex-1 rounded-t-[3px] rounded-b-[1.5px] origin-bottom animate-[grow-up_.5s_cubic-bezier(.22,.8,.28,1)_both] <%= bar_on ? "bg-gradient-to-t from-[oklch(0.5_0.16_32)] to-[oklch(0.79_0.17_62)]" : "bg-line" %>"
+              style="height: <%= bar_on ? bar_height : 26 %>%; animation-delay: <%= i * 55 %>ms"></span>
+      <% end %>
+    </div>
+    <div class="font-serif-display text-[28px] leading-none mt-2.5"><%= @daily_streak %></div>
+    <div class="text-[11px] text-dim mt-0.5">jour<%= "s" if @daily_streak != 1 %> de suite</div>
   </div>
   <div class="flex-1 rounded-[18px] bg-paper border border-line p-3.5">
-    <div class="font-serif-display text-[30px] leading-none"><%= (@focus_seconds_this_week.to_f / 3600).round(1) %></div>
-    <div class="text-[11.5px] text-dim mt-1">h focus cette semaine</div>
+    <div class="font-mono text-[9.5px] tracking-[.14em] uppercase text-dim">Focus</div>
+    <div class="h-[34px] flex items-end mt-2.5">
+      <div class="w-full h-[7px] rounded-full bg-line overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-[oklch(0.56_0.16_32)] to-accent transition-[width]"
+             style="width: <%= [ (@focus_seconds_this_week.to_f / 3600 / 5 * 100).round, 100 ].min %>%"></div>
+      </div>
+    </div>
+    <div class="font-serif-display text-[28px] leading-none mt-2.5"><%= (@focus_seconds_this_week.to_f / 3600).round(1) %> h</div>
+    <div class="text-[11px] text-dim mt-0.5">objectif 5 h / semaine</div>
   </div>
 </div>
 

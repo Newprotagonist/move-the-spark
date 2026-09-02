@@ -22,6 +22,8 @@ Rails.application.routes.draw do
       post :complete
       post :uncomplete
       post :start_timer
+      post :pause_timer
+      post :resume_timer
       post :stop_timer
       post :cancel_timer
       post :archive

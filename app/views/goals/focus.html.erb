@@ -2,32 +2,48 @@
 
 <% average_seconds = @goal.average_duration_seconds %>
 <% total_seconds = average_seconds || 1500 %>
+<% elapsed_seconds = @goal.timer_paused? ? (@goal.timer_paused_at - @goal.current_timer_started_at) : (Time.current - @goal.current_timer_started_at) %>
+<% intensity = [ elapsed_seconds / total_seconds.to_f, 1.0 ].min %>
 
-<div class="fixed inset-0 z-40 bg-[oklch(0.19_0.016_60)] text-[oklch(0.96_0.008_82)] flex flex-col items-center justify-center gap-6 px-7 py-14">
-  <div class="font-mono text-[10px] tracking-[.2em] uppercase opacity-55">Focus</div>
+<div class="fixed inset-0 z-40 bg-[oklch(0.19_0.016_60)] text-[oklch(0.96_0.008_82)] flex flex-col items-center justify-end gap-3.5 px-7 pt-11 pb-6"
+     data-controller="timer" data-timer-started-at-value="<%= @goal.current_timer_started_at.iso8601 %>"
+     data-timer-total-seconds-value="<%= total_seconds %>" data-timer-paused-value="<%= @goal.timer_paused? %>"
+     data-timer-paused-at-value="<%= @goal.timer_paused_at&.iso8601 %>">
+  <div class="w-full flex items-center justify-between font-mono text-[9.5px] tracking-[.18em] uppercase opacity-45">
+    <span>Focus</span>
+    <span><%= average_seconds ? "moyenne #{(average_seconds / 60).round} min" : "sans moyenne" %></span>
+  </div>
 
-  <div class="relative w-[236px] h-[236px] flex items-center justify-center"
-       data-controller="timer" data-timer-started-at-value="<%= @goal.current_timer_started_at.iso8601 %>"
-       data-timer-total-seconds-value="<%= total_seconds %>">
-    <div data-timer-target="arc" class="absolute inset-0 rounded-full"
-         style="background: conic-gradient(var(--color-accent) 0%, rgba(255,255,255,.14) 0)"></div>
-    <div class="absolute inset-3 rounded-full bg-[oklch(0.19_0.016_60)] flex flex-col items-center justify-center gap-2">
-      <div data-timer-target="display" class="font-mono text-[44px] tracking-tight">00:00</div>
-      <div class="text-xs opacity-60">
-        <%= average_seconds ? "moyenne #{(average_seconds / 60).round} min" : "sans moyenne" %>
-      </div>
-    </div>
+  <div class="relative flex-1 min-h-[150px] w-full flex items-end justify-center">
+    <%= render "shared/flame_body", intensity: intensity, live: true %>
   </div>
 
   <div class="text-center">
-    <div class="font-serif-display text-2xl"><%= @goal.title %></div>
-    <div class="text-xs opacity-55 mt-1">en cours</div>
+    <div class="font-mono text-[44px] leading-none tracking-tight" data-timer-target="display">00:00</div>
+    <div class="font-serif-display text-2xl mt-2" data-timer-target="fireStage"></div>
+    <div class="text-xs opacity-50 mt-1" data-timer-target="fireHint"></div>
   </div>
 
-  <div class="w-full mt-1">
+  <div class="flex gap-1.5 w-full max-w-[212px] mt-0.5">
+    <% 5.times do %>
+      <span data-timer-target="tick" class="flex-1 h-[3px] rounded-full bg-white/15 transition-colors"></span>
+    <% end %>
+  </div>
+
+  <div class="w-full text-center overflow-hidden">
+    <div class="font-serif-display text-xl truncate"><%= @goal.title %></div>
+    <div class="text-xs opacity-55 mt-1"><%= @goal.timer_paused? ? "en pause" : "en cours" %></div>
+  </div>
+
+  <div class="flex gap-2.5 w-full mt-0.5">
+    <%= button_to(@goal.timer_paused? ? "Reprendre" : "Pause",
+          @goal.timer_paused? ? resume_timer_goal_path(@goal) : pause_timer_goal_path(@goal),
+          method: :post, params: { occurred_on: @occurred_on },
+          class: "flex-1 py-4 rounded-2xl border border-white/25 text-center text-[14px] font-semibold bg-transparent",
+          form: { data: { turbo: false } }) %>
     <%= button_to "Terminé", stop_timer_goal_path(@goal), method: :post,
           params: { occurred_on: @occurred_on, return_to: day_path(date: @occurred_on) },
-          class: "w-full py-4 rounded-2xl bg-accent text-[oklch(0.2_0.03_40)] text-center text-[14px] font-bold",
+          class: "flex-1 py-4 rounded-2xl bg-accent text-[oklch(0.2_0.03_40)] text-center text-[14px] font-bold",
           form: { data: { turbo: false } } %>
   </div>
 

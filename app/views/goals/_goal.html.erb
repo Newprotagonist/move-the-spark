@@ -1,11 +1,12 @@
 <% plannable = local_assigns.fetch(:plannable, true) %>
+<% bursting = local_assigns.fetch(:bursting, false) %>
 <%= turbo_frame_tag dom_id(goal, reference_date.to_s) do %>
   <div class="flex items-center gap-1 py-1">
     <%= button_to(
           completion ? uncomplete_goal_path(goal) : complete_goal_path(goal),
           method: :post,
           params: { occurred_on: reference_date, plannable: plannable },
-          class: "shrink-0 flex items-center justify-center p-2.5",
+          class: "relative shrink-0 flex items-center justify-center p-2.5",
           "aria-label": completion ? "Marquer comme non fait" : "Marquer comme fait",
           form: { data: { turbo_frame: dom_id(goal, reference_date.to_s) } }
         ) do %>
@@ -13,6 +14,9 @@
                    <%= completion ? "bg-accent text-[oklch(0.2_0.03_40)]" : "border-[1.5px] border-line/90 text-transparent" %>">
         ✓
       </span>
+      <% if bursting && completion %>
+        <%= render "shared/completion_burst" %>
+      <% end %>
     <% end %>
 
     <div class="flex-1 min-w-0">

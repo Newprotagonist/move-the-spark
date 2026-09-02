@@ -9,7 +9,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "body", text: /240/
-    assert_select "body", text: /NIV\. 3/
+    assert_select "body", text: /niv\. 3/
     assert_select "body", text: /5 dernières semaines/
   end
 
