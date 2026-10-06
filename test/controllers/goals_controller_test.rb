@@ -376,15 +376,29 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     patch schedule_goal_path(goal), params: { hour: 14, date: "2026-08-17" }
 
-    assert_equal 14, goal.reload.scheduled_hour
+    goal.reload
+    assert_equal 14, goal.scheduled_hour
+    assert_equal 0, goal.scheduled_minute
   end
 
-  test "schedule clears the hour slot when hour is blank" do
-    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9)
+  test "schedule sets the goal's half-hour slot when minute is given" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    patch schedule_goal_path(goal), params: { hour: 14, minute: 30, date: "2026-08-17" }
+
+    goal.reload
+    assert_equal 14, goal.scheduled_hour
+    assert_equal 30, goal.scheduled_minute
+  end
+
+  test "schedule clears both the hour and minute slot when hour is blank" do
+    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_hour: 9, scheduled_minute: 30)
 
     patch schedule_goal_path(goal), params: { hour: "", date: "2026-08-17" }
 
-    assert_nil goal.reload.scheduled_hour
+    goal.reload
+    assert_nil goal.scheduled_hour
+    assert_equal 0, goal.scheduled_minute
   end
 
   test "schedule also replaces the checklist row so its HH:00 badge appears immediately" do

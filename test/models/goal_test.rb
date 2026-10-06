@@ -101,10 +101,11 @@ class GoalTest < ActiveSupport::TestCase
     assert goal.timer_running?
   end
 
-  test "timed defaults to true and scheduled_hour to nil" do
+  test "timed defaults to true, scheduled_hour to nil, scheduled_minute to 0" do
     goal = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     assert goal.timed?
     assert_nil goal.scheduled_hour
+    assert_equal 0, goal.scheduled_minute
   end
 
   test "scheduled_hour must be within 0..23 when present" do
@@ -124,6 +125,20 @@ class GoalTest < ActiveSupport::TestCase
     assert goal.valid?
 
     goal.scheduled_hour = nil
+    assert goal.valid?
+  end
+
+  test "scheduled_minute must be 0 or 30" do
+    goal = Goal.new(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    goal.scheduled_minute = 15
+    assert_not goal.valid?
+    assert_includes goal.errors[:scheduled_minute], "n'est pas une valeur autorisée"
+
+    goal.scheduled_minute = 0
+    assert goal.valid?
+
+    goal.scheduled_minute = 30
     assert goal.valid?
   end
 

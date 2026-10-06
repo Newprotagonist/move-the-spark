@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_124211) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_130001) do
   create_table "appointments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "location"
@@ -46,6 +46,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_124211) do
     t.integer "position", default: 0, null: false
     t.boolean "recurring", default: false, null: false
     t.integer "scheduled_hour"
+    t.integer "scheduled_minute", default: 0, null: false
     t.date "scheduled_on"
     t.integer "scheduled_weekday"
     t.boolean "timed", default: true, null: false

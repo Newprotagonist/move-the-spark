@@ -168,9 +168,9 @@ class GoalsController < ApplicationController
   # ribbon — a UI-only placement, not tied to any particular occurrence.
   def schedule
     date = Date.parse(params[:date])
-    @goal.update!(scheduled_hour: params[:hour].presence)
+    @goal.update!(scheduled_hour: params[:hour].presence, scheduled_minute: params[:hour].presence ? params[:minute].presence || 0 : 0)
     load_day(date)
-    hour_label = "%02d:00" % @goal.scheduled_hour if @goal.scheduled_hour.present?
+    hour_label = "%02d:%02d" % [ @goal.scheduled_hour, @goal.scheduled_minute ] if @goal.scheduled_hour.present?
 
     respond_to do |resp_format|
       resp_format.html { redirect_to day_path(date: date) }
@@ -203,9 +203,9 @@ class GoalsController < ApplicationController
   # ones are only hidden via CSS, not removed from the DOM), so the fields
   # that don't apply to the chosen type are cleared here rather than trusted
   # from the client.
-  # scheduled_hour is deliberately not permitted here — it's only ever set
-  # via #schedule, so editing a goal's title etc. can't accidentally clobber
-  # its planned time slot.
+  # scheduled_hour/scheduled_minute are deliberately not permitted here —
+  # they're only ever set via #schedule, so editing a goal's title etc.
+  # can't accidentally clobber its planned time slot.
   def goal_params
     permitted = params.require(:goal).permit(:title, :description, :frequency, :recurring, :scheduled_on, :active_from, :timed, :scheduled_weekday)
     if ActiveModel::Type::Boolean.new.cast(permitted[:recurring])

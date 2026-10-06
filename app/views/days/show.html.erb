@@ -20,6 +20,7 @@
 
   <%= form_with url: "/goals/0/schedule", method: :patch, data: { planning_target: "form" }, class: "hidden" do |f| %>
     <%= f.hidden_field :hour, data: { "planning-target": "hourField" } %>
+    <%= f.hidden_field :minute, data: { "planning-target": "minuteField" } %>
     <%= f.hidden_field :date, value: @date %>
   <% end %>
 

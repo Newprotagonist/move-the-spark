@@ -6,11 +6,12 @@
   </div>
 
   <div class="rounded-[20px] bg-paper border border-line px-3.5 pt-1.5 pb-3.5">
-    <% DayRibbon.new(goals: @daily_goals + @weekly_goals, appointments: @appointments).hours.each do |hour_slot| %>
-      <div class="grid grid-cols-[30px_1fr] gap-1.5">
-        <div class="font-mono text-[10.5px] text-faint pt-2.5"><%= format("%02d", hour_slot.hour) %></div>
+    <% DayRibbon.new(goals: @daily_goals + @weekly_goals, appointments: @appointments).slots.each do |slot| %>
+      <div data-planning-target="slot" data-planning-hour-param="<%= slot.hour %>" data-planning-minute-param="<%= slot.minute %>"
+           class="grid grid-cols-[30px_1fr] gap-1.5">
+        <div class="font-mono text-[10.5px] text-faint pt-2.5"><%= format("%02d", slot.hour) if slot.minute.zero? %></div>
         <div class="relative py-1 pl-3.5 border-l border-line min-h-[26px]">
-          <% hour_slot.appointments.each do |appointment| %>
+          <% slot.appointments.each do |appointment| %>
             <div class="my-0.5 px-3 py-2.5 rounded-[13px] bg-ink text-paper">
               <div class="flex items-center gap-2">
                 <span class="font-mono text-[11px] opacity-75 shrink-0"><%= l(appointment.starts_at, format: :time_only) %></span>
@@ -22,19 +23,25 @@
             </div>
           <% end %>
 
-          <% hour_slot.goals.each do |goal| %>
+          <% slot.goals.each do |goal| %>
             <% completion = @completions[[ goal.id, goal.occurrence_date(@date) ]] %>
-            <%# Read-only here — mark complete from the checklist above, which
-                stays the single source of truth for a goal's done state. %>
-            <div class="my-0.5 px-3 py-2.5 rounded-[13px] border <%= completion ? "border-accent/40 bg-accent-soft" : "border-line bg-[oklch(0.97_0.008_80)]" %>">
-              <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0 <%= completion ? "bg-accent" : "bg-line" %>"></span>
-                <span class="text-[13.5px] font-semibold flex-1 min-w-0 truncate <%= "line-through opacity-60" if completion %>"><%= goal.title %></span>
-              </div>
+            <%# Read-only here except for the drag handle — mark complete from
+                the checklist above, which stays the single source of truth
+                for a goal's done state. %>
+            <div data-ribbon-goal-card
+                 class="my-0.5 flex items-center gap-1.5 px-3 py-2.5 rounded-[13px] border <%= completion ? "border-accent/40 bg-accent-soft" : "border-line bg-[oklch(0.97_0.008_80)]" %>">
+              <span class="w-1.5 h-1.5 rounded-full shrink-0 <%= completion ? "bg-accent" : "bg-line" %>"></span>
+              <span class="text-[13.5px] font-semibold flex-1 min-w-0 truncate <%= "line-through opacity-60" if completion %>"><%= goal.title %></span>
+              <span class="grid grid-cols-2 gap-[2.5px] shrink-0 p-1.5 -m-1.5 cursor-grab touch-none"
+                    aria-label="Déplacer dans le ruban" title="Déplacer dans le ruban"
+                    data-action="pointerdown->planning#dragStart" data-planning-goal-id-param="<%= goal.id %>">
+                <% 6.times do %><span class="w-[3px] h-[3px] rounded-full bg-faint"></span><% end %>
+              </span>
             </div>
           <% end %>
 
-          <div data-planning-target="placeholder" data-action="click->planning#pickHour" data-planning-hour-param="<%= hour_slot.hour %>"
+          <div data-planning-target="placeholder" data-action="click->planning#pickHour"
+               data-planning-hour-param="<%= slot.hour %>" data-planning-minute-param="<%= slot.minute %>"
                class="hidden my-0.5 rounded-xl border-[1.5px] border-dashed border-accent bg-accent-soft px-3 py-2 font-mono text-[11px] text-accent-dark cursor-pointer">
             caser ici
           </div>
