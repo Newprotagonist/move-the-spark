@@ -3,14 +3,6 @@ module ApplicationHelper
     controllers.include?(controller_name)
   end
 
-  # The "Courses" tab jumps straight to the most-recently-used list (its own
-  # chip switcher covers the rest) rather than an index-of-lists page, so
-  # there's somewhere useful to land with one tap.
-  def courses_entry_path
-    list = ShoppingList.ordered.first
-    list ? shopping_list_path(list) : shopping_lists_path
-  end
-
   # Level system: an approved deviation from SPEC.md's "no levels in v1" —
   # see PLAN.md redesign notes. 100 points per level, flat.
   def level_for_points(points)

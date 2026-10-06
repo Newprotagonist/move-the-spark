@@ -68,13 +68,11 @@ endroit unique pour noter ses rendez-vous.
 - Pour les objectifs récurrents, affichage d'une moyenne des durées passées (ex. "en moyenne
   25 min"), pour aider à mieux planifier les prochaines occurrences.
 
-### 7. Listes de courses
-- Plusieurs listes nommées possibles (ex. "Courses hebdo", "Anniversaire"), créées, conservées
-  et réutilisables comme modèles.
-- Ajout/suppression d'articles dans une liste, articles cochables pendant les courses.
-- Fonctionnalité utilitaire indépendante : pas de points ni de lien avec le streak/gamification.
-- Affichée dans une section dédiée, séparée de la vue combinée jour/semaine (qui reste centrée
-  sur objectifs + rdv).
+### 7. Listes de courses — retiré le 2026-10-06
+Implémenté en v1 (listes nommées, articles cochables, section dédiée hors gamification), puis
+entièrement supprimé à la demande de l'utilisateur : fonctionnalité jamais utilisée en
+pratique. Modèles, contrôleurs, vues, routes, onglet de nav et tests retirés ; tables
+`shopping_lists`/`shopping_list_items` supprimées par migration (`DropShoppingLists`).
 
 ## Hors périmètre v1 (évolutions futures possibles)
 

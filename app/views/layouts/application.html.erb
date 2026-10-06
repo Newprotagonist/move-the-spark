@@ -90,10 +90,6 @@
             <span class="block w-[15px] h-[11px] rounded-sm border-2 border-t-[5px] border-current"></span>
             <span class="text-[10px] font-semibold">RDV</span>
           <% end %>
-          <%= link_to courses_entry_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("shopping_lists", "shopping_list_items") ? "bg-bg text-ink" : "text-faint"}" do %>
-            <span class="block w-[13px] h-[15px] rounded-b-[5px] border-2 border-t-0 border-current"></span>
-            <span class="text-[10px] font-semibold">Courses</span>
-          <% end %>
           <%= link_to profile_path, class: "flex-1 min-h-13 flex flex-col items-center justify-center gap-1.5 rounded-2xl #{nav_tab_active?("profiles", "settings") ? "bg-bg text-ink" : "text-faint"}" do %>
             <span class="block w-[15px] h-[15px] rounded-full bg-current"></span>
             <span class="text-[10px] font-semibold">Moi</span>

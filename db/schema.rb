@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_164431) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_124211) do
   create_table "appointments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "location"
@@ -78,23 +78,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_164431) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "shopping_list_items", force: :cascade do |t|
-    t.boolean "checked", default: false, null: false
-    t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.integer "position", default: 0, null: false
-    t.integer "shopping_list_id", null: false
-    t.datetime "updated_at", null: false
-    t.index ["shopping_list_id"], name: "index_shopping_list_items_on_shopping_list_id"
-  end
-
-  create_table "shopping_lists", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.integer "position", default: 0, null: false
-    t.datetime "updated_at", null: false
-  end
-
   add_foreign_key "goal_completions", "goals"
-  add_foreign_key "shopping_list_items", "shopping_lists"
 end
