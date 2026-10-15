@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_130001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_160053) do
   create_table "appointments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "location"
@@ -20,7 +20,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_130001) do
     t.datetime "starts_at", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["starts_at"], name: "index_appointments_on_starts_at"
+    t.index ["user_id"], name: "index_appointments_on_user_id"
   end
 
   create_table "goal_completions", force: :cascade do |t|
@@ -53,9 +55,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_130001) do
     t.datetime "timer_paused_at"
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["archived_at"], name: "index_goals_on_archived_at"
     t.index ["scheduled_on"], name: "index_goals_on_scheduled_on"
     t.index ["title"], name: "index_goals_on_title"
+    t.index ["user_id"], name: "index_goals_on_user_id"
   end
 
   create_table "push_subscriptions", force: :cascade do |t|
@@ -65,7 +69,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_130001) do
     t.string "p256dh_key", null: false
     t.datetime "updated_at", null: false
     t.string "user_agent"
+    t.integer "user_id"
     t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
+  create_table "sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "settings", force: :cascade do |t|
@@ -77,7 +92,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_130001) do
     t.integer "points_per_goal", default: 10, null: false
     t.integer "streak_bonus_cap", default: 10, null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["user_id"], name: "index_settings_on_user_id"
   end
 
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email_address", null: false
+    t.string "name"
+    t.string "password_digest", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_users_on_email_address", unique: true
+  end
+
+  add_foreign_key "appointments", "users"
   add_foreign_key "goal_completions", "goals"
+  add_foreign_key "goals", "users"
+  add_foreign_key "push_subscriptions", "users"
+  add_foreign_key "sessions", "users"
+  add_foreign_key "settings", "users"
 end

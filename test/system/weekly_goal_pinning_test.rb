@@ -8,6 +8,7 @@ class WeeklyGoalPinningTest < ApplicationSystemTestCase
       click_on "+ objectif"
       fill_in "Titre", with: "Yoga"
       choose "Récurrent", allow_label_click: true
+      assert_selector "select[name='goal[frequency]']" # waits for the goal-type JS toggle to reveal it
       select "Chaque semaine", from: "Fréquence"
       click_on "mer"
       click_on "Créer"

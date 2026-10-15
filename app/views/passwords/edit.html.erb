@@ -1,0 +1,30 @@
+<% content_for :title, "Move the Spark — Nouveau mot de passe" %>
+
+<div class="min-h-screen flex items-center justify-center px-5 bg-bg">
+  <div class="w-full max-w-[360px]">
+    <div class="text-center mb-7">
+      <h1 class="font-serif-display text-[28px] leading-none">Nouveau mot de passe</h1>
+    </div>
+
+    <% if alert = flash[:alert] %>
+      <p role="alert" class="mb-4 rounded-2xl px-4 py-3 text-sm bg-red-100 text-red-800"><%= alert %></p>
+    <% end %>
+
+    <%= form_with url: password_path(params[:token]), method: :put, class: "space-y-4" do |form| %>
+      <div>
+        <%= form.label :password, "Nouveau mot de passe", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+        <%= form.password_field :password, required: true, autocomplete: "new-password", maxlength: 72,
+              class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
+      </div>
+
+      <div>
+        <%= form.label :password_confirmation, "Confirmer le mot de passe", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
+        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72,
+              class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
+      </div>
+
+      <%= form.submit "Enregistrer",
+            class: "w-full py-3.5 rounded-2xl bg-ink text-paper text-[15px] font-semibold cursor-pointer" %>
+    <% end %>
+  </div>
+</div>
