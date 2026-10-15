@@ -1,9 +1,13 @@
 # Move the Spark
 
+[![CI](https://github.com/Newprotagonist/planner/actions/workflows/ci.yml/badge.svg)](https://github.com/Newprotagonist/planner/actions/workflows/ci.yml)
+
 Application de planification (PWA) : objectifs quotidiens/hebdomadaires avec gamification
 simple, rendez-vous, chrono d'objectifs, et rappels par notification push. Conçue et développée
 seul, du produit à l'infra — en prod depuis août 2026 sur [movethespark.com](https://movethespark.com).
-Voir `SPEC.md` et `PLAN.md` pour le détail des choix produit et techniques au fil de l'eau.
+Voir `SPEC.md` et `PLAN.md` pour le détail des choix produit et techniques au fil de l'eau —
+rédigés avec [Claude Code](https://claude.com/claude-code), qui a aussi assisté une bonne
+partie du développement.
 
 Quelques points qui sortent d'un CRUD Rails standard :
 - **PWA complète** : installable, notifications Web Push (VAPID), fonctionne hors-ligne pour
