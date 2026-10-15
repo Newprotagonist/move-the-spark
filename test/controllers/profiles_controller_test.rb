@@ -11,6 +11,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /240/
     assert_select "body", text: /niv\. 3/
     assert_select "body", text: /5 dernières semaines/
+    assert_select "[data-hearth-tier='2']" # level 3 falls in tier 2 (Étincelle)
   end
 
   test "focus hours only count completions from the current week" do

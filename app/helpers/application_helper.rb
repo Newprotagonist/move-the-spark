@@ -31,6 +31,12 @@ module ApplicationHelper
     LEVEL_TIERS.reverse.find { |min, _| level >= min }.last
   end
 
+  # Same tier boundaries as level_tier_name, but the 1..7 position rather
+  # than the French name — what HearthScene.for_tier needs.
+  def level_tier_index(level)
+    LEVEL_TIERS.rindex { |min, _| level >= min } + 1
+  end
+
   # public/icon*.png and favicon.png are plain static files, not
   # asset-pipeline fingerprinted, and are served with a 1-year
   # cache-control (config.public_file_server.headers) — so replacing their

@@ -2,8 +2,6 @@
 
 <% average_seconds = @goal.average_duration_seconds %>
 <% total_seconds = average_seconds || 1500 %>
-<% elapsed_seconds = @goal.timer_paused? ? (@goal.timer_paused_at - @goal.current_timer_started_at) : (Time.current - @goal.current_timer_started_at) %>
-<% intensity = [ elapsed_seconds / total_seconds.to_f, 1.0 ].min %>
 
 <div class="fixed inset-0 z-40 bg-[oklch(0.19_0.016_60)] text-[oklch(0.96_0.008_82)] flex flex-col items-center justify-end gap-3.5 px-7 pt-11 pb-6"
      data-controller="timer" data-timer-started-at-value="<%= @goal.current_timer_started_at.iso8601 %>"
@@ -14,8 +12,19 @@
     <span><%= average_seconds ? "moyenne #{(average_seconds / 60).round} min" : "sans moyenne" %></span>
   </div>
 
-  <div class="relative flex-1 min-h-[150px] w-full flex items-end justify-center">
-    <%= render "shared/flame_body", intensity: intensity, live: true %>
+  <div class="relative flex-1 min-h-[150px] w-full">
+    <%# 5 of the 7 hearth tiers — Foyer/Phare are account-level milestones,
+        out of scope for a single session's progress-vs-average. Thresholds
+        match FOCUS_STAGES in timer_controller.js, which cross-fades these
+        by toggling opacity; the active one starts visible so there's
+        something on screen before JS has ticked once. %>
+    <% [ 1, 2, 3, 4, 6 ].each_with_index do |tier, i| %>
+      <div data-timer-target="hearthScene" data-hearth-tier="<%= tier %>"
+           class="absolute inset-0 transition-opacity duration-700"
+           style="opacity: <%= i.zero? ? 1 : 0 %>">
+        <%= render "shared/hearth_scene", layers: HearthScene.for_tier(tier).layers %>
+      </div>
+    <% end %>
   </div>
 
   <div class="text-center">

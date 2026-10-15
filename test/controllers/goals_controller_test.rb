@@ -228,6 +228,7 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal Time.zone.local(2026, 8, 17, 10, 0, 0), goal.reload.current_timer_started_at
+    assert_select "[data-timer-target='hearthScene']", count: 5
   end
 
   test "focus does not restart an already-running timer" do

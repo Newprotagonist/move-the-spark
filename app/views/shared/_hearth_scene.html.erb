@@ -1,0 +1,84 @@
+<%# Renders one HearthScene's layers (a fixed set of shapes — ember bed,
+    logs, stones, flying sparks, a twinkling star, flame, and tier 7's
+    lighthouse beam) into a single self-contained visual, filling its
+    parent's box. Locals: `layers:` (required, Array<HearthScene::Layer>),
+    `html_class:` (optional, extra classes on the outer wrapper — used by
+    the profile hero for its entrance animation). %>
+<% html_class = local_assigns.fetch(:html_class, "") %>
+<div class="relative w-full h-full overflow-hidden <%= html_class %>">
+  <% layers.each do |layer| %>
+    <% case layer.type %>
+    <% when :halo %>
+      <div class="absolute left-1/2 rounded-full blur-2xl animate-[swell_5.4s_ease-in-out_infinite]"
+           style="bottom: <%= layer.b %>px; width: <%= layer.size %>px; height: <%= layer.size %>px;
+                  margin-left: -<%= layer.size / 2.0 %>px;
+                  background: radial-gradient(circle, <%= layer.color %>, transparent 65%); opacity: <%= layer.opacity %>"></div>
+
+    <% when :bed %>
+      <div class="absolute left-1/2 rounded-full"
+           style="bottom: <%= layer.b %>px; width: <%= layer.w %>px; height: <%= layer.h %>px; margin-left: -<%= layer.w / 2.0 %>px;
+                  background: radial-gradient(ellipse at 50% 35%, oklch(0.55 0.17 38), oklch(0.3 0.08 32) 55%, transparent 72%)"></div>
+
+    <% when :coal %>
+      <div class="absolute rounded-full animate-[coal-glow_2.9s_ease-in-out_infinite]"
+           style="left: <%= layer.x %>%; bottom: <%= layer.b %>px; width: <%= layer.size %>px; height: <%= layer.size %>px;
+                  margin-left: -<%= layer.size / 2.0 %>px; background: oklch(0.8 0.17 58);
+                  filter: blur(<%= layer.size > 8 ? 2 : 1.5 %>px); animation-delay: <%= layer.delay %>s"></div>
+
+    <% when :log %>
+      <div class="absolute left-1/2 rounded-[5px]"
+           style="bottom: <%= layer.b %>px; width: <%= layer.w %>px; height: 9px; margin-left: -<%= layer.w / 2.0 %>px;
+                  background: linear-gradient(to bottom, oklch(0.44 0.06 45), oklch(0.26 0.03 40));
+                  box-shadow: inset 0 2px 0 oklch(0.66 0.16 48 / .6); transform: rotate(<%= layer.rot %>deg)"></div>
+
+    <% when :stone %>
+      <div class="absolute left-1/2 rounded-[46%_46%_38%_38%]"
+           style="bottom: 4px; width: <%= layer.w %>px; height: <%= layer.h %>px; margin-left: <%= layer.x - layer.w / 2.0 %>px;
+                  background: linear-gradient(to bottom, oklch(0.5 0.02 60), oklch(0.3 0.015 55));
+                  box-shadow: inset 0 2px 0 oklch(0.78 0.1 55 / .4)"></div>
+
+    <% when :spark %>
+      <%# Tailwind only generates CSS for class tokens that appear literally
+          in the source — spark-a/b/c varies per instance, so its animation
+          goes entirely through an inline style rather than animate-[...]. %>
+      <div class="absolute left-1/2 rounded-full opacity-0"
+           style="bottom: <%= layer.b %>px; width: 3px; height: 3px; margin-left: <%= layer.x %>px; background: <%= layer.color %>;
+                  animation: spark-<%= layer.variant %> <%= layer.duration %>s ease-out <%= layer.delay %>s infinite"></div>
+
+    <% when :star %>
+      <div class="absolute left-1/2 animate-[twinkle_1.9s_ease-in-out_infinite]"
+           style="bottom: <%= layer.b %>px; width: <%= layer.size %>px; height: <%= layer.size %>px; margin-left: -<%= layer.size / 2.0 %>px;
+                  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+                  background: linear-gradient(135deg, oklch(0.98 0.05 95), oklch(0.8 0.16 62))"></div>
+
+    <% when :flame %>
+      <div class="absolute" style="left: <%= layer.x %>%; bottom: <%= layer.b %>px; width: 0; height: 0">
+        <span class="absolute left-1/2 rounded-[50%_0_50%_50%] blur-md opacity-80 animate-[flame-a_3.1s_ease-in-out_infinite]"
+              style="width: <%= layer.size %>px; height: <%= layer.size %>px; margin-left: -<%= layer.size / 2.0 %>px;
+                     background: linear-gradient(205deg, oklch(0.6 0.19 44), oklch(0.42 0.15 28)); animation-delay: <%= layer.delay %>s"></span>
+        <span class="absolute left-1/2 rounded-[50%_0_50%_50%] blur-[3px] animate-[flame-b_2.3s_ease-in-out_infinite]"
+              style="width: <%= layer.size * 0.7 %>px; height: <%= layer.size * 0.7 %>px; margin-left: -<%= layer.size * 0.35 %>px;
+                     bottom: <%= layer.size * 0.016 %>px;
+                     background: linear-gradient(205deg, oklch(0.75 0.19 58), oklch(0.56 0.19 36)); animation-delay: <%= layer.delay %>s"></span>
+        <span class="absolute left-1/2 rounded-[50%_0_50%_50%] blur-[1px] animate-[flame-c_1.6s_ease-in-out_infinite]"
+              style="width: <%= layer.size * 0.41 %>px; height: <%= layer.size * 0.41 %>px; margin-left: -<%= layer.size * 0.205 %>px;
+                     bottom: <%= layer.size * 0.033 %>px;
+                     background: linear-gradient(205deg, oklch(0.96 0.09 96), oklch(0.82 0.16 68)); animation-delay: <%= layer.delay %>s"></span>
+      </div>
+
+    <% when :beam %>
+      <div class="absolute left-1/2 rounded-full animate-[beam-sweep_6s_ease-in-out_infinite]"
+           style="bottom: -82px; width: 300px; height: 300px; margin-left: -150px;
+                  background: conic-gradient(transparent 0 72deg, oklch(0.92 0.1 85 / .45) 84deg, transparent 96deg, transparent 252deg, oklch(0.92 0.1 85 / .45) 264deg, transparent 276deg);
+                  -webkit-mask-image: radial-gradient(circle, #000 8%, transparent 62%); mask-image: radial-gradient(circle, #000 8%, transparent 62%)"></div>
+
+    <% when :tower %>
+      <div class="absolute left-1/2"
+           style="bottom: 0; width: 40px; height: 58px; margin-left: -20px;
+                  clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
+                  background: linear-gradient(to right, oklch(0.28 0.02 50), oklch(0.44 0.03 55) 48%, oklch(0.24 0.02 50))"></div>
+      <div class="absolute left-1/2" style="bottom: 24px; width: 30px; height: 5px; margin-left: -15px; background: oklch(0.5 0.12 45 / .55)"></div>
+      <div class="absolute left-1/2 rounded-[2px]" style="bottom: 57px; width: 32px; height: 5px; margin-left: -16px; background: oklch(0.4 0.03 55)"></div>
+    <% end %>
+  <% end %>
+</div>

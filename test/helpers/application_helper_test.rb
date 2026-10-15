@@ -18,6 +18,23 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "Phare", level_tier_name(200)
   end
 
+  test "level_tier_index returns the same boundaries as level_tier_name, as a 1..7 position" do
+    assert_equal 1, level_tier_index(1)
+    assert_equal 1, level_tier_index(2)
+    assert_equal 2, level_tier_index(3)
+    assert_equal 2, level_tier_index(5)
+    assert_equal 3, level_tier_index(6)
+    assert_equal 3, level_tier_index(10)
+    assert_equal 4, level_tier_index(11)
+    assert_equal 4, level_tier_index(20)
+    assert_equal 5, level_tier_index(21)
+    assert_equal 5, level_tier_index(40)
+    assert_equal 6, level_tier_index(41)
+    assert_equal 6, level_tier_index(80)
+    assert_equal 7, level_tier_index(81)
+    assert_equal 7, level_tier_index(200)
+  end
+
   test "level_for_points, level_progress_percent, points_to_next_level are consistent" do
     assert_equal 1, level_for_points(0)
     assert_equal 0, level_progress_percent(0)

@@ -10,8 +10,10 @@
     </span>
   </div>
 
-  <div class="relative h-[150px] flex items-end justify-center my-1">
-    <%= render "shared/flame_body", intensity: level_progress_percent(@total_points) / 100.0 %>
+  <div class="relative h-[150px] flex items-end justify-center my-1" data-hearth-tier="<%= level_tier_index(level_for_points(@total_points)) %>">
+    <%= render "shared/hearth_scene",
+          layers: HearthScene.for_tier(level_tier_index(level_for_points(@total_points))).layers,
+          html_class: "animate-[hearth-enter_1.2s_cubic-bezier(.22,.8,.28,1)_both]" %>
   </div>
 
   <div class="relative text-center">

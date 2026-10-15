@@ -4,9 +4,9 @@ import { Controller } from "@hotwired/stimulus"
 // the source of truth for the actual duration (computed on stop); this is
 // purely a visual ticker so the "started" state doesn't look frozen. The
 // optional arc target (used only on the old compact display) and the
-// optional fire* targets (used on the full-screen focus view) are both
-// no-ops when their targets aren't declared, so the compact row usage
-// (display only) is unaffected by either.
+// optional hearthScene/fireStage/fireHint/tick targets (used on the
+// full-screen Focus view) are all no-ops when their targets aren't
+// declared, so the compact row usage (display only) is unaffected by them.
 const FOCUS_STAGES = [
   { t: 0, name: "Braise", hint: "la chaleur monte doucement" },
   { t: 0.14, name: "Étincelle", hint: "ça prend" },
@@ -16,7 +16,7 @@ const FOCUS_STAGES = [
 ]
 
 export default class extends Controller {
-  static targets = [ "display", "arc", "fireBody", "fireHalo", "fireStage", "fireHint", "tick" ]
+  static targets = [ "display", "arc", "hearthScene", "fireStage", "fireHint", "tick" ]
   static values = { startedAt: String, totalSeconds: Number, paused: Boolean, pausedAt: String }
 
   connect() {
@@ -41,22 +41,18 @@ export default class extends Controller {
       this.arcTarget.style.background = `conic-gradient(var(--color-accent) ${pct}%, rgba(255,255,255,.14) 0)`
     }
 
-    if (this.hasFireBodyTarget && this.totalSecondsValue > 0) this.updateFire(elapsedSeconds)
+    if (this.hasHearthSceneTarget && this.totalSecondsValue > 0) this.updateFire(elapsedSeconds)
   }
 
   updateFire(elapsedSeconds) {
     const g = Math.min(1, elapsedSeconds / this.totalSecondsValue)
-    const scale = (0.28 + g * 0.84).toFixed(3)
-    const opacity = Math.min(1, 0.16 + g * 1.8).toFixed(2)
-    this.fireBodyTarget.style.transform = `scale(${scale})`
-    this.fireBodyTarget.style.opacity = opacity
-    if (this.hasFireHaloTarget) this.fireHaloTarget.style.opacity = (0.22 + g * 0.62).toFixed(2)
-
     const stage = FOCUS_STAGES.filter((s) => g >= s.t).pop() || FOCUS_STAGES[0]
+    const stageIndex = FOCUS_STAGES.indexOf(stage)
+
+    this.hearthSceneTargets.forEach((el, i) => { el.style.opacity = i === stageIndex ? "1" : "0" })
     if (this.hasFireStageTarget) this.fireStageTarget.textContent = stage.name
     if (this.hasFireHintTarget) this.fireHintTarget.textContent = stage.hint
     if (this.hasTickTarget) {
-      const stageIndex = FOCUS_STAGES.indexOf(stage)
       this.tickTargets.forEach((el, i) => el.classList.toggle("bg-accent", i <= stageIndex))
     }
   }
