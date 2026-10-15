@@ -5,6 +5,11 @@ require "test_helper"
 # only considers aria-label when this is enabled.
 Capybara.enable_aria_label = true
 
+# The default 2s wait is tight for a full Turbo page navigation (not just a
+# DOM update) on a loaded CI runner — bump it so genuinely slow CI doesn't
+# flake tests that pass locally every time.
+Capybara.default_max_wait_time = 5
+
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome, screen_size: [ 1400, 1400 ]
 
