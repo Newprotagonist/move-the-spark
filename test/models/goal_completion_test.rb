@@ -2,7 +2,8 @@ require "test_helper"
 
 class GoalCompletionTest < ActiveSupport::TestCase
   setup do
-    @goal = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    @user = users(:one)
+    @goal = Goal.create!(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
   end
 
   test "valid with goal, occurred_on and completed_at" do
@@ -32,7 +33,7 @@ class GoalCompletionTest < ActiveSupport::TestCase
   end
 
   test "index_for bulk-loads and indexes completions by [goal_id, occurred_on], ignoring unrequested pairs" do
-    other_goal = Goal.create!(title: "Other", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    other_goal = Goal.create!(user: @user, title: "Other", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     c1 = GoalCompletion.create!(goal: @goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current)
     GoalCompletion.create!(goal: @goal, occurred_on: Date.new(2026, 8, 18), completed_at: Time.current)
     c3 = GoalCompletion.create!(goal: other_goal, occurred_on: Date.new(2026, 8, 17), completed_at: Time.current)

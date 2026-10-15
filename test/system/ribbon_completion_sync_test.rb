@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class RibbonCompletionSyncTest < ApplicationSystemTestCase
   test "checking off a scheduled goal updates its ribbon card too, without a reload" do
-    Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.current, scheduled_hour: 9)
+    Goal.create!(user: @current_user, title: "Sport", recurring: true, frequency: "daily", active_from: Date.current, scheduled_hour: 9)
 
     visit root_path
     within("#day-ribbon") { assert_no_selector "span.line-through" }

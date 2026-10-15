@@ -1,12 +1,15 @@
-# One row per browser/device the PWA has been granted push permission on.
-# Pushes fan out to every row; a subscription that the push service reports
-# as gone (404/410 — e.g. the app was uninstalled) prunes itself.
+# One row per browser/device the PWA has been granted push permission on,
+# owned by whichever user was signed in when it subscribed. Pushes fan out
+# to one user's rows only; a subscription that the push service reports as
+# gone (404/410 — e.g. the app was uninstalled) prunes itself.
 class PushSubscription < ApplicationRecord
-  validates :endpoint, presence: true, uniqueness: true
+  belongs_to :user
+
+  validates :endpoint, presence: true, uniqueness: { scope: :user_id }
   validates :p256dh_key, presence: true
   validates :auth_key, presence: true
 
-  # Sends the same notification to every subscribed device.
+  # Sends the same notification to every device belonging to one user.
   #
   # icon: the app logo shown in the notification body. badge: a small
   # monochrome silhouette (transparent background, opaque shape — Android
@@ -17,7 +20,7 @@ class PushSubscription < ApplicationRecord
   # 1-year cache-control as any other public/ file, so an icon update
   # needs the same cache-busting or already-delivered notifications (and
   # the OS's own icon cache) keep showing the old one.
-  def self.broadcast(title:, body:, path: "/")
+  def self.broadcast(user:, title:, body:, path: "/")
     payload = {
       title: title,
       options: {
@@ -27,7 +30,7 @@ class PushSubscription < ApplicationRecord
         data: { path: path }
       }
     }.to_json
-    find_each { |subscription| subscription.deliver(payload) }
+    user.push_subscriptions.find_each { |subscription| subscription.deliver(payload) }
   end
 
   def deliver(payload)

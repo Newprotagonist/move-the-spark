@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class PlanningModeTest < ApplicationSystemTestCase
   test "placing a goal into an hour slot shows it in the ribbon" do
-    Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
+    Goal.create!(user: @current_user, title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
 
     visit root_path
     assert_text "Lire"

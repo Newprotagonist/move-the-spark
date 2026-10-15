@@ -6,7 +6,7 @@ require "application_system_test_case"
 # never via a request spec hitting the route directly.
 class DeleteViaEditFormTest < ApplicationSystemTestCase
   test "deleting a goal from its edit sheet actually deletes it" do
-    Goal.create!(title: "À supprimer", recurring: true, frequency: "daily", active_from: Date.current)
+    Goal.create!(user: @current_user, title: "À supprimer", recurring: true, frequency: "daily", active_from: Date.current)
 
     visit root_path
     click_link "Modifier"
@@ -21,7 +21,7 @@ class DeleteViaEditFormTest < ApplicationSystemTestCase
     # lists upcoming ones (Appointment.upcoming, starts_at >= Time.current),
     # so a fixed hour becomes flaky and fails outright once the wall clock
     # passes it later the same day.
-    Appointment.create!(title: "À annuler", starts_at: 1.hour.from_now)
+    Appointment.create!(user: @current_user, title: "À annuler", starts_at: 1.hour.from_now)
 
     # Not reachable from the day view's ribbon (read-only cards there, by
     # design) — the appointments index is where "Modifier" lives.

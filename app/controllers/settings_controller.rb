@@ -2,11 +2,11 @@ class SettingsController < ApplicationController
   before_action -> { @sheet = true }, only: [ :edit, :update ]
 
   def edit
-    @setting = Setting.instance
+    @setting = current_user.setting
   end
 
   def update
-    @setting = Setting.instance
+    @setting = current_user.setting
     if @setting.update(setting_params)
       # Not back to itself: settings is opened as a sheet from the profile
       # page, and sheet pages don't render flash messages (no <main> there) —

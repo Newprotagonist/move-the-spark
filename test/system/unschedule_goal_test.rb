@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class UnscheduleGoalTest < ApplicationSystemTestCase
   test "removing a goal from its hour slot via the checklist badge's x button" do
-    Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.current, scheduled_hour: 9)
+    Goal.create!(user: @current_user, title: "Sport", recurring: true, frequency: "daily", active_from: Date.current, scheduled_hour: 9)
 
     visit root_path
     within("#day-ribbon") { assert_text "Sport" }

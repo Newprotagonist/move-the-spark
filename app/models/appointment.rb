@@ -1,4 +1,6 @@
 class Appointment < ApplicationRecord
+  belongs_to :user
+
   validates :title, presence: true
   validates :starts_at, presence: true
 
@@ -7,9 +9,9 @@ class Appointment < ApplicationRecord
   scope :in_week, ->(date) { where(starts_at: date.beginning_of_week.beginning_of_day..date.end_of_week.end_of_day).order(:starts_at) }
 
   # The reminder lead time to use for this appointment: its own override if
-  # set, otherwise the app-wide default from Setting.
+  # set, otherwise its owner's default from Setting.
   def effective_reminder_lead_minutes
-    reminder_lead_minutes || Setting.instance.default_appointment_lead_minutes
+    reminder_lead_minutes || user.setting.default_appointment_lead_minutes
   end
 
   def reminder_due_at

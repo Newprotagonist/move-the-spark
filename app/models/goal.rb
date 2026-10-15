@@ -1,6 +1,7 @@
 class Goal < ApplicationRecord
   FREQUENCIES = %w[daily weekly].freeze
 
+  belongs_to :user
   has_many :goal_completions, dependent: :destroy
 
   before_validation :default_frequency_for_one_off
@@ -80,10 +81,11 @@ class Goal < ApplicationRecord
 
   # Matches by title (not goal_id) per spec: an ad-hoc one-off goal retyped
   # with the same title on different days counts toward the same average as
-  # a true recurring goal.
+  # a true recurring goal — but only within the same user's own goals, or
+  # two users with a same-titled goal would blend each other's durations.
   def average_duration_seconds
     GoalCompletion.joins(:goal)
-      .where(goals: { title: title })
+      .where(goals: { title: title, user_id: user_id })
       .where.not(duration_seconds: nil)
       .average(:duration_seconds)
   end

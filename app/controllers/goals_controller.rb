@@ -6,7 +6,7 @@ class GoalsController < ApplicationController
   before_action -> { @fullscreen = true }, only: [ :focus ]
 
   def new
-    @goal = Goal.new(
+    @goal = current_user.goals.new(
       recurring: params[:recurring] == "true",
       frequency: params[:frequency].presence || "daily",
       scheduled_on: params[:scheduled_on].presence && Date.parse(params[:scheduled_on])
@@ -14,7 +14,7 @@ class GoalsController < ApplicationController
   end
 
   def create
-    @goal = Goal.new(goal_params)
+    @goal = current_user.goals.new(goal_params)
     if @goal.save
       # Not referer-based: the referer for a create POST is the "new" form
       # page itself, which would just bounce back to an empty form.
@@ -53,7 +53,7 @@ class GoalsController < ApplicationController
   end
 
   def archived
-    @archived_goals = Goal.archived.ordered
+    @archived_goals = current_user.goals.archived.ordered
   end
 
   def complete
@@ -61,7 +61,7 @@ class GoalsController < ApplicationController
     streak_before = current_streak_for(@goal)
     completion = @goal.goal_completions.find_or_create_by!(occurred_on: occurred_on) do |c|
       c.completed_at = Time.current
-      c.points_awarded = Setting.instance.points_per_goal
+      c.points_awarded = current_user.setting.points_per_goal
     end
     newly_completed = completion.previously_new_record?
 
@@ -124,7 +124,7 @@ class GoalsController < ApplicationController
       stop_reference = @goal.timer_paused? ? @goal.timer_paused_at : Time.current
       duration_seconds = (stop_reference - @goal.current_timer_started_at).round
       completion = @goal.goal_completions.find_or_initialize_by(occurred_on: occurred_on)
-      completion.points_awarded = Setting.instance.points_per_goal if newly_completed
+      completion.points_awarded = current_user.setting.points_per_goal if newly_completed
       completion.started_at = @goal.current_timer_started_at
       completion.duration_seconds = duration_seconds
       completion.completed_at = Time.current
@@ -196,7 +196,7 @@ class GoalsController < ApplicationController
   private
 
   def set_goal
-    @goal = Goal.find(params[:id])
+    @goal = current_user.goals.find(params[:id])
   end
 
   # The form always submits all four type-specific fields (the irrelevant
@@ -229,7 +229,7 @@ class GoalsController < ApplicationController
   end
 
   def current_streak_for(goal)
-    StreakCalculator.new(unit: goal.weekly? ? :week : :day).current_streak
+    StreakCalculator.new(user: current_user, unit: goal.weekly? ? :week : :day).current_streak
   end
 
   # Awards a bonus only when this completion is what actually grew the
@@ -239,7 +239,7 @@ class GoalsController < ApplicationController
   def award_streak_bonus!(completion, streak_before, streak_after)
     return 0 unless streak_after > streak_before
 
-    bonus = [ streak_after, Setting.instance.streak_bonus_cap ].min
+    bonus = [ streak_after, current_user.setting.streak_bonus_cap ].min
     completion.update!(points_awarded: completion.points_awarded + bonus) if bonus.positive?
     bonus
   end
@@ -266,10 +266,10 @@ class GoalsController < ApplicationController
   # celebrate twice.
   def celebrate_day_complete?(occurred_on)
     return false unless @goal.daily? && occurred_on == Date.current
-    return false if Setting.instance.last_celebrated_on == Date.current
+    return false if current_user.setting.last_celebrated_on == Date.current
 
-    due_today = Goal.due_on(occurred_on)
-    completed_ids = GoalCompletion.where(goal_id: due_today.select(:id), occurred_on: occurred_on).pluck(:goal_id)
+    due_today = current_user.goals.due_on(occurred_on)
+    completed_ids = current_user.goal_completions.where(goal_id: due_today.select(:id), occurred_on: occurred_on).pluck(:goal_id)
     due_today.all? { |goal| completed_ids.include?(goal.id) }
   end
 
@@ -311,9 +311,9 @@ class GoalsController < ApplicationController
         end
 
         if newly_completed && celebrate_day_complete?(occurred_on)
-          Setting.instance.update!(last_celebrated_on: Date.current)
+          current_user.setting.update!(last_celebrated_on: Date.current)
           streams << turbo_stream.append("celebration-overlay", partial: "shared/celebration_overlay",
-                                          locals: { bonus: bonus, streak: current_streak_for(@goal), total: Goal.due_on(occurred_on).size })
+                                          locals: { bonus: bonus, streak: current_streak_for(@goal), total: current_user.goals.due_on(occurred_on).size })
         elsif newly_completed
           streams << turbo_stream.append("toasts", partial: "shared/toast", locals: { message: completion_toast(completion, bonus) })
         end

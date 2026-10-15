@@ -10,15 +10,15 @@ class StatsControllerTest < ActionDispatch::IntegrationTest
 
   test "renders successfully with a realistic mix of daily, weekly, one-off, and archived goals" do
     travel_to Time.zone.local(2026, 8, 24, 9, 0) do
-      daily = Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.current - 6)
+      daily = Goal.create!(user: @current_user, title: "Sport", recurring: true, frequency: "daily", active_from: Date.current - 6)
       4.times { |i| GoalCompletion.create!(goal: daily, occurred_on: Date.current - i, completed_at: Time.current, points_awarded: 10) }
 
-      weekly = Goal.create!(title: "Bilan", recurring: true, frequency: "weekly", active_from: Date.current - 21)
+      weekly = Goal.create!(user: @current_user, title: "Bilan", recurring: true, frequency: "weekly", active_from: Date.current - 21)
       GoalCompletion.create!(goal: weekly, occurred_on: Date.current.beginning_of_week, completed_at: Time.current, points_awarded: 10)
 
-      Goal.create!(title: "Buy milk", recurring: false, scheduled_on: Date.current)
+      Goal.create!(user: @current_user, title: "Buy milk", recurring: false, scheduled_on: Date.current)
 
-      archived = Goal.create!(title: "Old habit", recurring: true, frequency: "daily", active_from: Date.current - 10,
+      archived = Goal.create!(user: @current_user, title: "Old habit", recurring: true, frequency: "daily", active_from: Date.current - 10,
                                archived_at: Date.current - 1)
       GoalCompletion.create!(goal: archived, occurred_on: Date.current - 5, completed_at: Time.current, points_awarded: 10)
 

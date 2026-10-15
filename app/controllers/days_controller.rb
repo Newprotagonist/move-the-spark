@@ -7,6 +7,6 @@ class DaysController < ApplicationController
     @previous_date = @date - 1
     @next_date = @date + 1
 
-    @today_progress = StreakCalculator.new(unit: :day, reference_date: @date).current_period_progress if @date == Date.current
+    @today_progress = StreakCalculator.new(user: current_user, unit: :day, reference_date: @date).current_period_progress if @date == Date.current
   end
 end

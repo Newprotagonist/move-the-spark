@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class FocusModeTest < ApplicationSystemTestCase
   test "starting focus, then finishing, completes the goal and returns to the day" do
-    Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
+    Goal.create!(user: @current_user, title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
 
     visit root_path
     click_link "Démarrer le focus"
@@ -19,7 +19,7 @@ class FocusModeTest < ApplicationSystemTestCase
   end
 
   test "pausing then resuming keeps the recorded duration accurate before finishing" do
-    Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
+    Goal.create!(user: @current_user, title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
 
     visit root_path
     click_link "Démarrer le focus"
@@ -47,7 +47,7 @@ class FocusModeTest < ApplicationSystemTestCase
   end
 
   test "closing without saving does not complete the goal" do
-    Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
+    Goal.create!(user: @current_user, title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
 
     visit root_path
     click_link "Démarrer le focus"

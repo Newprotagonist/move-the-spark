@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class ArchiveGoalTest < ApplicationSystemTestCase
   test "archiving a recurring goal removes it from the day view and lists it as archived" do
-    Goal.create!(title: "Vieux rituel", recurring: true, frequency: "daily", active_from: Date.current - 10)
+    Goal.create!(user: @current_user, title: "Vieux rituel", recurring: true, frequency: "daily", active_from: Date.current - 10)
 
     visit root_path
     assert_text "Vieux rituel"

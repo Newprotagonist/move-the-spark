@@ -3,7 +3,13 @@
 # holds one row per device across however many the PWA is installed on.
 class PushSubscriptionsController < ApplicationController
   def create
-    subscription = PushSubscription.find_or_initialize_by(endpoint: params[:endpoint])
+    # A push endpoint identifies one browser/service-worker registration, not
+    # one account — a shared device (e.g. a family tablet) can carry a stale
+    # subscription from whoever was signed in last. Reclaim it for the
+    # current user rather than leaving two rows racing for the same endpoint.
+    PushSubscription.where(endpoint: params[:endpoint]).where.not(user_id: current_user.id).destroy_all
+
+    subscription = current_user.push_subscriptions.find_or_initialize_by(endpoint: params[:endpoint])
     subscription.assign_attributes(
       p256dh_key: params[:p256dh_key],
       auth_key: params[:auth_key],
@@ -18,7 +24,7 @@ class PushSubscriptionsController < ApplicationController
   end
 
   def destroy
-    PushSubscription.find_by(endpoint: params[:endpoint])&.destroy
+    current_user.push_subscriptions.find_by(endpoint: params[:endpoint])&.destroy
     head :no_content
   end
 end

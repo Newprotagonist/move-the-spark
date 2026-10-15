@@ -2,7 +2,7 @@ require "test_helper"
 
 class SettingsControllerTest < ActionDispatch::IntegrationTest
   test "shows the settings form with current values" do
-    Setting.instance.update!(points_per_goal: 20)
+    @current_user.setting.update!(points_per_goal: 20)
 
     get edit_settings_path
 
@@ -14,7 +14,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     patch settings_path, params: { setting: { points_per_goal: 5, default_appointment_lead_minutes: 15, daily_goal_reminder_time: "19:30" } }
 
     assert_redirected_to profile_path
-    setting = Setting.instance
+    setting = @current_user.setting
     assert_equal 5, setting.points_per_goal
     assert_equal 15, setting.default_appointment_lead_minutes
   end
@@ -25,8 +25,8 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "changing points_per_goal affects future completions, not past ones" do
-    Setting.instance.update!(streak_bonus_cap: 0)
-    goal = Goal.create!(title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    @current_user.setting.update!(streak_bonus_cap: 0)
+    goal = Goal.create!(user: @current_user, title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     post complete_goal_path(goal), params: { occurred_on: "2026-08-16" }
     assert_equal 10, goal.goal_completions.sole.points_awarded
 

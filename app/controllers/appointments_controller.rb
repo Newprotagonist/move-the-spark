@@ -3,15 +3,15 @@ class AppointmentsController < ApplicationController
   before_action -> { @sheet = true }, only: [ :new, :create, :edit, :update ]
 
   def index
-    @appointments = Appointment.upcoming
+    @appointments = current_user.appointments.upcoming
   end
 
   def new
-    @appointment = Appointment.new(starts_at: parse_date(params[:date])&.to_time&.change(hour: 9))
+    @appointment = current_user.appointments.new(starts_at: parse_date(params[:date])&.to_time&.change(hour: 9))
   end
 
   def create
-    @appointment = Appointment.new(appointment_params)
+    @appointment = current_user.appointments.new(appointment_params)
     if @appointment.save
       # Not referer-based: the referer for a create POST is the "new" form
       # page itself. Go to the day the appointment is actually on instead.
@@ -40,7 +40,7 @@ class AppointmentsController < ApplicationController
   private
 
   def set_appointment
-    @appointment = Appointment.find(params[:id])
+    @appointment = current_user.appointments.find(params[:id])
   end
 
   def appointment_params

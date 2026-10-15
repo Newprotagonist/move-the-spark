@@ -1,2 +1,9 @@
-# Empty on purpose — Setting is a singleton accessed via Setting.instance,
-# which lazily creates its row; tests don't rely on a fixture row existing.
+# One row per fixture user — Setting is no longer a lazily-created
+# singleton (see app/models/setting.rb); fixture-loaded users skip
+# User#after_create's create_setting!, since fixtures insert rows
+# directly and never run AR callbacks, so these have to exist explicitly.
+one:
+  user: one
+
+two:
+  user: two

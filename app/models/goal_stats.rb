@@ -31,7 +31,8 @@ class GoalStats
     end
   end
 
-  def initialize
+  def initialize(user:)
+    @user = user
     @goals = active_recurring_goals
     # GoalHistory#occurrences is not memoized internally and re-queries on
     # every call — fetch each goal's occurrences exactly once here and reuse
@@ -67,7 +68,7 @@ class GoalStats
   def best_weekday
     total = 0
     counts = Hash.new(0)
-    GoalCompletion.pluck(:completed_at).each do |time|
+    @user.goal_completions.pluck(:completed_at).each do |time|
       counts[(time.wday - 1) % 7] += 1 # Date#wday is 0=Sunday; this app's week is 0=Monday
       total += 1
     end
@@ -102,8 +103,8 @@ class GoalStats
   private
 
   def active_recurring_goals
-    Goal.recurring_daily.not_archived_as_of(Date.current).where("active_from <= ?", Date.current).ordered.to_a +
-      Goal.due_in_week(Date.current).to_a
+    @user.goals.recurring_daily.not_archived_as_of(Date.current).where("active_from <= ?", Date.current).ordered.to_a +
+      @user.goals.due_in_week(Date.current).to_a
   end
 
   def ranked_goals

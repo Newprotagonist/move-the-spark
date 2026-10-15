@@ -2,7 +2,7 @@ require "test_helper"
 
 class ProfilesControllerTest < ActionDispatch::IntegrationTest
   test "shows points, level, streak, and heatmap" do
-    goal = Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.current - 3)
+    goal = Goal.create!(user: @current_user, title: "Sport", recurring: true, frequency: "daily", active_from: Date.current - 3)
     GoalCompletion.create!(goal: goal, occurred_on: Date.current, completed_at: Time.current, duration_seconds: 900, points_awarded: 240)
 
     get profile_path
@@ -15,7 +15,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "focus hours only count completions from the current week" do
-    goal = Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.current - 10)
+    goal = Goal.create!(user: @current_user, title: "Sport", recurring: true, frequency: "daily", active_from: Date.current - 10)
     travel_to Date.current.beginning_of_week.beginning_of_day + 1.day do
       GoalCompletion.create!(goal: goal, occurred_on: Date.current, completed_at: Time.current, duration_seconds: 3600, points_awarded: 10)
     end

@@ -15,9 +15,10 @@
 class StreakCalculator
   MAX_LOOKBACK_UNITS = 365 * 3
 
-  def initialize(unit:, reference_date: Date.current)
+  def initialize(user:, unit:, reference_date: Date.current)
     raise ArgumentError, "unit must be :day or :week" unless %i[day week].include?(unit)
 
+    @user = user
     @unit = unit
     @reference_date = reference_date
   end
@@ -63,11 +64,11 @@ class StreakCalculator
   # nil when no goal of this frequency has ever existed (streak is then 0).
   def earliest_possible_period
     if @unit == :week
-      Goal.where(recurring: true, frequency: "weekly").minimum(:active_from)&.beginning_of_week
+      @user.goals.where(recurring: true, frequency: "weekly").minimum(:active_from)&.beginning_of_week
     else
       [
-        Goal.where(recurring: true, frequency: "daily").minimum(:active_from),
-        Goal.where(recurring: false).minimum(:scheduled_on)
+        @user.goals.where(recurring: true, frequency: "daily").minimum(:active_from),
+        @user.goals.where(recurring: false).minimum(:scheduled_on)
       ].compact.min
     end
   end
@@ -81,7 +82,7 @@ class StreakCalculator
   end
 
   def due_goals(date)
-    @unit == :week ? Goal.due_in_week(date) : Goal.due_on(date)
+    @unit == :week ? @user.goals.due_in_week(date) : @user.goals.due_on(date)
   end
 
   def in_progress?(date)
@@ -97,6 +98,6 @@ class StreakCalculator
 
   def completed_goal_ids(date, scheduled)
     occurred_on = @unit == :week ? date.beginning_of_week : date
-    GoalCompletion.where(goal_id: scheduled.map(&:id), occurred_on: occurred_on).pluck(:goal_id)
+    @user.goal_completions.where(goal_id: scheduled.map(&:id), occurred_on: occurred_on).pluck(:goal_id)
   end
 end

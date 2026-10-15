@@ -5,15 +5,18 @@ class AppointmentReminderJob < ApplicationJob
   queue_as :default
 
   def perform
-    Appointment.where(reminder_sent_at: nil).where("starts_at >= ?", Time.current).find_each do |appointment|
-      next if appointment.reminder_due_at > Time.current
+    User.find_each do |user|
+      user.appointments.where(reminder_sent_at: nil).where("starts_at >= ?", Time.current).find_each do |appointment|
+        next if appointment.reminder_due_at > Time.current
 
-      PushSubscription.broadcast(
-        title: "Rendez-vous à venir",
-        body: reminder_body(appointment),
-        path: Rails.application.routes.url_helpers.day_path(date: appointment.starts_at.to_date)
-      )
-      appointment.update!(reminder_sent_at: Time.current)
+        PushSubscription.broadcast(
+          user: user,
+          title: "Rendez-vous à venir",
+          body: reminder_body(appointment),
+          path: Rails.application.routes.url_helpers.day_path(date: appointment.starts_at.to_date)
+        )
+        appointment.update!(reminder_sent_at: Time.current)
+      end
     end
   end
 

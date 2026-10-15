@@ -29,7 +29,7 @@ class GoalHistory
   private
 
   def completions
-    GoalCompletion.joins(:goal).where(goals: { title: @goal.title })
+    GoalCompletion.joins(:goal).where(goals: { title: @goal.title, user_id: @goal.user_id })
   end
 
   def recurring_occurrences
@@ -62,7 +62,7 @@ class GoalHistory
   # Every one-off goal ever created with this title is itself one
   # occurrence, whether or not it was ever completed.
   def one_off_occurrences
-    goals = Goal.where(title: @goal.title, recurring: false).order(scheduled_on: :desc).limit(MAX_DAILY_OCCURRENCES)
+    goals = Goal.where(title: @goal.title, recurring: false, user_id: @goal.user_id).order(scheduled_on: :desc).limit(MAX_DAILY_OCCURRENCES)
     completion_by_goal_id = GoalCompletion.where(goal_id: goals.map(&:id)).index_by(&:goal_id)
     goals.reverse.map { |g| occurrence_for(g.scheduled_on, completion_by_goal_id[g.id]) }
   end

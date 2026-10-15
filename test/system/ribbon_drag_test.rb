@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class RibbonDragTest < ApplicationSystemTestCase
   test "dragging a scheduled goal's ribbon card to a different half-hour slot reschedules it" do
-    Goal.create!(title: "Sport", recurring: true, frequency: "daily", active_from: Date.current, scheduled_hour: 9, scheduled_minute: 0)
+    Goal.create!(user: @current_user, title: "Sport", recurring: true, frequency: "daily", active_from: Date.current, scheduled_hour: 9, scheduled_minute: 0)
 
     visit root_path
     within("#day-ribbon") { assert_text "Sport" }

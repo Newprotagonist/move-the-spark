@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class GoalHistoryTest < ApplicationSystemTestCase
   test "viewing a goal's history from its edit sheet shows completion and duration data" do
-    goal = Goal.create!(title: "Course à pied", recurring: true, frequency: "daily", active_from: Date.current - 2, timed: true)
+    goal = Goal.create!(user: @current_user, title: "Course à pied", recurring: true, frequency: "daily", active_from: Date.current - 2, timed: true)
     GoalCompletion.create!(goal: goal, occurred_on: Date.current - 2, completed_at: Time.current, duration_seconds: 900, points_awarded: 10)
     GoalCompletion.create!(goal: goal, occurred_on: Date.current, completed_at: Time.current, duration_seconds: 1200, points_awarded: 10)
 

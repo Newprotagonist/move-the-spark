@@ -1,32 +1,34 @@
 require "test_helper"
 
 class GoalTest < ActiveSupport::TestCase
+  setup { @user = users(:one) }
+
   test "one-off goal requires scheduled_on and defaults frequency to daily" do
-    goal = Goal.new(title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17))
+    goal = Goal.new(user: @user, title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17))
     assert goal.valid?
     assert_equal "daily", goal.frequency
   end
 
   test "one-off goal is invalid without scheduled_on" do
-    goal = Goal.new(title: "Buy milk", recurring: false)
+    goal = Goal.new(user: @user, title: "Buy milk", recurring: false)
     assert_not goal.valid?
     assert_includes goal.errors[:scheduled_on], "doit être rempli"
   end
 
   test "one-off goal cannot be weekly" do
-    goal = Goal.new(title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17), frequency: "weekly")
+    goal = Goal.new(user: @user, title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17), frequency: "weekly")
     assert_not goal.valid?
     assert_includes goal.errors[:frequency], "must be daily for a one-off goal"
   end
 
   test "one-off goal cannot have active_from" do
-    goal = Goal.new(title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17), active_from: Date.new(2026, 8, 1))
+    goal = Goal.new(user: @user, title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17), active_from: Date.new(2026, 8, 1))
     assert_not goal.valid?
     assert_includes goal.errors[:active_from], "must be blank for a one-off goal"
   end
 
   test "recurring goal requires active_from and rejects scheduled_on" do
-    goal = Goal.new(title: "Run", recurring: true, frequency: "daily", scheduled_on: Date.new(2026, 8, 17))
+    goal = Goal.new(user: @user, title: "Run", recurring: true, frequency: "daily", scheduled_on: Date.new(2026, 8, 17))
     assert_not goal.valid?
     assert_includes goal.errors[:scheduled_on], "must be blank for a recurring goal"
 
@@ -39,47 +41,47 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "recurring goal frequency must be daily or weekly" do
-    goal = Goal.new(title: "Run", recurring: true, frequency: "hourly", active_from: Date.new(2026, 8, 1))
+    goal = Goal.new(user: @user, title: "Run", recurring: true, frequency: "hourly", active_from: Date.new(2026, 8, 1))
     assert_not goal.valid?
     assert_includes goal.errors[:frequency], "n'est pas une valeur autorisée"
   end
 
   test "due_on returns one-off goals scheduled that day and active recurring daily goals" do
     today = Date.new(2026, 8, 17)
-    one_off_today = Goal.create!(title: "One-off today", recurring: false, scheduled_on: today)
-    Goal.create!(title: "One-off other day", recurring: false, scheduled_on: today + 1)
-    recurring_active = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: today - 5)
-    Goal.create!(title: "Not yet active", recurring: true, frequency: "daily", active_from: today + 1)
-    Goal.create!(title: "Weekly habit", recurring: true, frequency: "weekly", active_from: today - 5)
+    one_off_today = Goal.create!(user: @user, title: "One-off today", recurring: false, scheduled_on: today)
+    Goal.create!(user: @user, title: "One-off other day", recurring: false, scheduled_on: today + 1)
+    recurring_active = Goal.create!(user: @user, title: "Daily habit", recurring: true, frequency: "daily", active_from: today - 5)
+    Goal.create!(user: @user, title: "Not yet active", recurring: true, frequency: "daily", active_from: today + 1)
+    Goal.create!(user: @user, title: "Weekly habit", recurring: true, frequency: "weekly", active_from: today - 5)
 
-    assert_equal [ one_off_today, recurring_active ].sort_by(&:id), Goal.due_on(today).sort_by(&:id)
+    assert_equal [ one_off_today, recurring_active ].sort_by(&:id), @user.goals.due_on(today).sort_by(&:id)
   end
 
   test "due_on excludes recurring daily goals archived before that date" do
     today = Date.new(2026, 8, 17)
-    goal = Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: today - 5,
+    goal = Goal.create!(user: @user, title: "Daily habit", recurring: true, frequency: "daily", active_from: today - 5,
                          archived_at: today.beginning_of_day)
-    assert_not_includes Goal.due_on(today), goal
+    assert_not_includes @user.goals.due_on(today), goal
 
-    still_active = Goal.create!(title: "Daily habit 2", recurring: true, frequency: "daily", active_from: today - 5,
+    still_active = Goal.create!(user: @user, title: "Daily habit 2", recurring: true, frequency: "daily", active_from: today - 5,
                                  archived_at: (today + 1).end_of_day)
-    assert_includes Goal.due_on(today), still_active
+    assert_includes @user.goals.due_on(today), still_active
   end
 
   test "due_in_week returns active recurring weekly goals for the week containing the date" do
     wednesday = Date.new(2026, 8, 19) # week of 2026-08-17 (Mon) .. 2026-08-23 (Sun)
-    weekly = Goal.create!(title: "Weekly review", recurring: true, frequency: "weekly", active_from: wednesday - 30)
-    Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: wednesday - 30)
-    not_active_yet = Goal.create!(title: "Future weekly", recurring: true, frequency: "weekly", active_from: wednesday + 30)
+    weekly = Goal.create!(user: @user, title: "Weekly review", recurring: true, frequency: "weekly", active_from: wednesday - 30)
+    Goal.create!(user: @user, title: "Daily habit", recurring: true, frequency: "daily", active_from: wednesday - 30)
+    not_active_yet = Goal.create!(user: @user, title: "Future weekly", recurring: true, frequency: "weekly", active_from: wednesday + 30)
 
-    result = Goal.due_in_week(wednesday)
+    result = @user.goals.due_in_week(wednesday)
     assert_includes result, weekly
     assert_not_includes result, not_active_yet
   end
 
   test "average_duration_seconds matches by title across distinct goal rows" do
-    g1 = Goal.create!(title: "Read", recurring: false, scheduled_on: Date.new(2026, 8, 10))
-    g2 = Goal.create!(title: "Read", recurring: false, scheduled_on: Date.new(2026, 8, 11))
+    g1 = Goal.create!(user: @user, title: "Read", recurring: false, scheduled_on: Date.new(2026, 8, 10))
+    g2 = Goal.create!(user: @user, title: "Read", recurring: false, scheduled_on: Date.new(2026, 8, 11))
     GoalCompletion.create!(goal: g1, occurred_on: g1.scheduled_on, completed_at: Time.current, duration_seconds: 600)
     GoalCompletion.create!(goal: g2, occurred_on: g2.scheduled_on, completed_at: Time.current, duration_seconds: 1200)
 
@@ -88,13 +90,24 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "average_duration_seconds ignores completions without a duration" do
-    goal = Goal.create!(title: "Meditate", recurring: false, scheduled_on: Date.new(2026, 8, 10))
+    goal = Goal.create!(user: @user, title: "Meditate", recurring: false, scheduled_on: Date.new(2026, 8, 10))
     GoalCompletion.create!(goal: goal, occurred_on: goal.scheduled_on, completed_at: Time.current, duration_seconds: nil)
     assert_nil goal.average_duration_seconds
   end
 
+  test "average_duration_seconds does not blend completions from another user's same-titled goal" do
+    other_user = users(:two)
+    mine = Goal.create!(user: @user, title: "Read", recurring: false, scheduled_on: Date.new(2026, 8, 10))
+    theirs = Goal.create!(user: other_user, title: "Read", recurring: false, scheduled_on: Date.new(2026, 8, 10))
+    GoalCompletion.create!(goal: mine, occurred_on: mine.scheduled_on, completed_at: Time.current, duration_seconds: 600)
+    GoalCompletion.create!(goal: theirs, occurred_on: theirs.scheduled_on, completed_at: Time.current, duration_seconds: 6000)
+
+    assert_equal 600.0, mine.average_duration_seconds
+    assert_equal 6000.0, theirs.average_duration_seconds
+  end
+
   test "timer_running? reflects current_timer_started_at" do
-    goal = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    goal = Goal.create!(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     assert_not goal.timer_running?
 
     goal.update!(current_timer_started_at: Time.current)
@@ -102,14 +115,14 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "timed defaults to true, scheduled_hour to nil, scheduled_minute to 0" do
-    goal = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    goal = Goal.create!(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
     assert goal.timed?
     assert_nil goal.scheduled_hour
     assert_equal 0, goal.scheduled_minute
   end
 
   test "scheduled_hour must be within 0..23 when present" do
-    goal = Goal.new(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    goal = Goal.new(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
     goal.scheduled_hour = 24
     assert_not goal.valid?
@@ -129,7 +142,7 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "scheduled_minute must be 0 or 30" do
-    goal = Goal.new(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    goal = Goal.new(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
 
     goal.scheduled_minute = 15
     assert_not goal.valid?
@@ -143,7 +156,7 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "scheduled_weekday must be within 0..6 when present" do
-    goal = Goal.new(title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
+    goal = Goal.new(user: @user, title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
 
     goal.scheduled_weekday = 7
     assert_not goal.valid?
@@ -163,21 +176,21 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "scheduled_weekday must be blank for a non-weekly goal" do
-    goal = Goal.new(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_weekday: 2)
+    goal = Goal.new(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1), scheduled_weekday: 2)
     assert_not goal.valid?
     assert_includes goal.errors[:scheduled_weekday], "must be blank for a non-weekly goal"
   end
 
   test "due_on_weekday? is always true for daily and one-off goals" do
-    daily = Goal.create!(title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
-    one_off = Goal.create!(title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17))
+    daily = Goal.create!(user: @user, title: "Run", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    one_off = Goal.create!(user: @user, title: "Buy milk", recurring: false, scheduled_on: Date.new(2026, 8, 17))
 
     assert daily.due_on_weekday?(Date.new(2026, 8, 17))
     assert one_off.due_on_weekday?(Date.new(2026, 8, 17))
   end
 
   test "due_on_weekday? is true for an unpinned weekly goal on any day of its week" do
-    goal = Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
+    goal = Goal.create!(user: @user, title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1))
 
     (Date.new(2026, 8, 17)..Date.new(2026, 8, 23)).each do |date|
       assert goal.due_on_weekday?(date), "expected #{date} to be due for an unpinned weekly goal"
@@ -185,7 +198,7 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "due_on_weekday? is true only on the pinned day for a pinned weekly goal" do
-    goal = Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1), scheduled_weekday: 2)
+    goal = Goal.create!(user: @user, title: "Yoga", recurring: true, frequency: "weekly", active_from: Date.new(2026, 8, 1), scheduled_weekday: 2)
 
     assert_not goal.due_on_weekday?(Date.new(2026, 8, 17)) # Monday
     assert goal.due_on_weekday?(Date.new(2026, 8, 19)) # Wednesday
@@ -193,19 +206,19 @@ class GoalTest < ActiveSupport::TestCase
   end
 
   test "archived scope returns only goals with an archived_at set" do
-    active = Goal.create!(title: "Active", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
-    archived = Goal.create!(title: "Archived", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
+    active = Goal.create!(user: @user, title: "Active", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    archived = Goal.create!(user: @user, title: "Archived", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
                              archived_at: Time.zone.local(2026, 8, 10))
 
-    assert_equal [ archived ], Goal.archived.to_a
-    assert_not_includes Goal.archived, active
+    assert_equal [ archived ], @user.goals.archived.to_a
+    assert_not_includes @user.goals.archived, active
   end
 
   test "due_on excludes an archived goal from the day it was archived onward" do
-    goal = Goal.create!(title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
+    goal = Goal.create!(user: @user, title: "Habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1),
                          archived_at: Date.new(2026, 8, 10).beginning_of_day)
 
-    assert_includes Goal.due_on(Date.new(2026, 8, 9)), goal
-    assert_not_includes Goal.due_on(Date.new(2026, 8, 10)), goal
+    assert_includes @user.goals.due_on(Date.new(2026, 8, 9)), goal
+    assert_not_includes @user.goals.due_on(Date.new(2026, 8, 10)), goal
   end
 end

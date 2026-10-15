@@ -8,7 +8,8 @@ class ActivityHeatmap
 
   # level: 0 nothing scheduled that day, 1 scheduled but none done,
   # 2 partially done, 3 fully done (the day that would count toward streak).
-  def initialize(reference_date: Date.current)
+  def initialize(user:, reference_date: Date.current)
+    @user = user
     @reference_date = reference_date
   end
 
@@ -24,10 +25,10 @@ class ActivityHeatmap
   private
 
   def level_for(date)
-    goals = Goal.due_on(date)
+    goals = @user.goals.due_on(date)
     return 0 if goals.empty?
 
-    completed = GoalCompletion.where(goal_id: goals.map(&:id), occurred_on: date).count
+    completed = @user.goal_completions.where(goal_id: goals.map(&:id), occurred_on: date).count
     return 3 if completed == goals.size
     return 1 if completed.zero?
 

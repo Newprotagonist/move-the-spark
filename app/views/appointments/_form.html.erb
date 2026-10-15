@@ -42,9 +42,9 @@
 
   <div>
     <%= f.label :reminder_lead_minutes, "Rappel avant le rdv (minutes, optionnel)", class: "block font-mono text-[10px] tracking-[.14em] uppercase text-dim mb-1.5" %>
-    <%= f.number_field :reminder_lead_minutes, min: 1, placeholder: Setting.instance.default_appointment_lead_minutes,
+    <%= f.number_field :reminder_lead_minutes, min: 1, placeholder: current_user.setting.default_appointment_lead_minutes,
           class: "w-full box-border border border-line bg-paper rounded-2xl px-3.5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent" %>
-    <p class="text-xs text-dim mt-1.5">Par défaut : <%= Setting.instance.default_appointment_lead_minutes %> min avant.</p>
+    <p class="text-xs text-dim mt-1.5">Par défaut : <%= current_user.setting.default_appointment_lead_minutes %> min avant.</p>
   </div>
 
   <div class="pt-2">

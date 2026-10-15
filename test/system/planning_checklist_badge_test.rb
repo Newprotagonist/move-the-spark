@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class PlanningChecklistBadgeTest < ApplicationSystemTestCase
   test "scheduling a goal shows the HH:00 badge on its checklist row without a reload" do
-    Goal.create!(title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
+    Goal.create!(user: @current_user, title: "Lire", recurring: true, frequency: "daily", active_from: Date.current)
 
     visit root_path
     find("button[aria-label='Caser dans le ruban']").click

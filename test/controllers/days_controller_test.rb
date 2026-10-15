@@ -3,9 +3,9 @@ require "test_helper"
 class DaysControllerTest < ActionDispatch::IntegrationTest
   test "root shows today with its due goals" do
     travel_to Time.zone.local(2026, 8, 17, 9, 0) do
-      Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
-      Goal.create!(title: "One-off today", recurring: false, scheduled_on: Date.current)
-      Goal.create!(title: "One-off tomorrow", recurring: false, scheduled_on: Date.current + 1)
+      Goal.create!(user: @current_user, title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+      Goal.create!(user: @current_user, title: "One-off today", recurring: false, scheduled_on: Date.current)
+      Goal.create!(user: @current_user, title: "One-off tomorrow", recurring: false, scheduled_on: Date.current + 1)
 
       get root_path
 
@@ -18,7 +18,7 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
 
   test "shows weekly goals with a distinct badge" do
     monday = Date.new(2026, 8, 17)
-    Goal.create!(title: "Weekly review", recurring: true, frequency: "weekly", active_from: monday - 7)
+    Goal.create!(user: @current_user, title: "Weekly review", recurring: true, frequency: "weekly", active_from: monday - 7)
 
     get day_path(date: monday + 2)
 
@@ -29,7 +29,7 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
 
   test "a weekly goal pinned to a weekday only appears on that day" do
     monday = Date.new(2026, 8, 17)
-    Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
+    Goal.create!(user: @current_user, title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
 
     get day_path(date: monday + 2) # Wednesday: the pinned day
     assert_response :success
@@ -42,7 +42,7 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
 
   test "a weekly goal pinned to a weekday shows its day abbreviation instead of the generic badge" do
     monday = Date.new(2026, 8, 17)
-    Goal.create!(title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
+    Goal.create!(user: @current_user, title: "Yoga", recurring: true, frequency: "weekly", active_from: monday - 7, scheduled_weekday: 2)
 
     get day_path(date: monday + 2) # Wednesday
 
@@ -52,7 +52,7 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "navigates to a specific date via the date param" do
-    Goal.create!(title: "Old one-off", recurring: false, scheduled_on: Date.new(2026, 1, 1))
+    Goal.create!(user: @current_user, title: "Old one-off", recurring: false, scheduled_on: Date.new(2026, 1, 1))
 
     get day_path(date: "2026-01-01")
 
@@ -61,9 +61,9 @@ class DaysControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "shows appointments for the day alongside goals in the same combined view" do
-    Goal.create!(title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
-    Appointment.create!(title: "Dentiste", starts_at: Time.zone.local(2026, 8, 17, 14, 30))
-    Appointment.create!(title: "Other day rdv", starts_at: Time.zone.local(2026, 8, 18, 9, 0))
+    Goal.create!(user: @current_user, title: "Daily habit", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+    Appointment.create!(user: @current_user, title: "Dentiste", starts_at: Time.zone.local(2026, 8, 17, 14, 30))
+    Appointment.create!(user: @current_user, title: "Other day rdv", starts_at: Time.zone.local(2026, 8, 18, 9, 0))
 
     get day_path(date: "2026-08-17")
 
