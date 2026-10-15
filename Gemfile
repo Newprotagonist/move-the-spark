@@ -72,5 +72,5 @@ group :test do
 
   # Minitest 6 dropped minitest/mock (Object#stub, Minitest::Mock); pin to the
   # last 5.x series so job/model tests can stub Webpush.payload_send.
-  gem "minitest", "~> 5.25"
+  gem "minitest", "~> 6.0"
 end
