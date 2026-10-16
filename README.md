@@ -127,6 +127,10 @@ Kamal vers un serveur Hetzner unique, image Docker buildée et poussée sur `ghc
 `config/deploy.yml`). SQLite tourne directement sur le serveur (volume Docker persistant),
 pas de base de données externe à gérer.
 
+Nécessite quelques variables d'environnement côté opérateur (jamais commitées) :
+`PLANNER_SERVER_IP`, `KAMAL_REGISTRY_PASSWORD` (token `ghcr.io`), et `RAILS_MASTER_KEY`
+lu automatiquement depuis `config/master.key` (voir `.kamal/secrets`).
+
 ```bash
 kamal deploy
 ```

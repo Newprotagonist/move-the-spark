@@ -4,10 +4,11 @@ service: planner
 # Name of the container image (use your-user/app-name on external registries).
 image: newprotagonist/planner
 
-# Deploy to these servers.
+# Deploy to these servers. Exported by the deploying operator's own shell,
+# same as the other secrets below (not committed — this repo is public).
 servers:
   web:
-    - 2.28.42.48
+    - <%= ENV.fetch("PLANNER_SERVER_IP") %>
   # job:
   #   hosts:
   #     - 192.168.0.1
