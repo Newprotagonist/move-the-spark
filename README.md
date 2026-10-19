@@ -1,6 +1,6 @@
 # Move the Spark
 
-[![CI](https://github.com/Newprotagonist/planner/actions/workflows/ci.yml/badge.svg)](https://github.com/Newprotagonist/planner/actions/workflows/ci.yml)
+[![CI](https://github.com/Newprotagonist/move-the-spark/actions/workflows/ci.yml/badge.svg)](https://github.com/Newprotagonist/move-the-spark/actions/workflows/ci.yml)
 
 Application de planification (PWA) : objectifs quotidiens/hebdomadaires avec gamification
 simple, rendez-vous, chrono d'objectifs, et rappels par notification push. Conçue et développée
