@@ -8,7 +8,7 @@ class DailyGoalReminderJob < ApplicationJob
     # next, not return — these guards are per-user now (each user has their
     # own Setting/reminder time), so one user not being due yet must not
     # stop the whole batch from considering everyone after them.
-    User.find_each do |user|
+    User.not_demo.find_each do |user|
       setting = user.setting
       next if setting.daily_goal_reminder_sent_on == Date.current
       next if Time.current.strftime("%H:%M") < setting.daily_goal_reminder_time.strftime("%H:%M")

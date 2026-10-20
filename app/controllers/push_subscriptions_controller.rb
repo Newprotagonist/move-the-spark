@@ -3,6 +3,8 @@
 # holds one row per device across however many the PWA is installed on.
 class PushSubscriptionsController < ApplicationController
   def create
+    return head :no_content if current_user.demo?
+
     # A push endpoint identifies one browser/service-worker registration, not
     # one account — a shared device (e.g. a family tablet) can carry a stale
     # subscription from whoever was signed in last. Reclaim it for the

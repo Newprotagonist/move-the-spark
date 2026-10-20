@@ -112,4 +112,20 @@ class DailyGoalReminderJobTest < ActiveJob::TestCase
     assert_nil not_due_yet.setting.reload.daily_goal_reminder_sent_on
     assert_equal Date.new(2026, 8, 17), due_now.setting.reload.daily_goal_reminder_sent_on
   end
+
+  test "le compte démo ne reçoit jamais de rappel" do
+    demo = User.create!(email_address: "demo@movethespark.app", password: "password", demo: true)
+    demo.setting.update!(daily_goal_reminder_time: "18:00")
+    PushSubscription.create!(user: demo, endpoint: "https://push.example/demo", p256dh_key: "a", auth_key: "b")
+    Goal.create!(user: demo, title: "Sport", recurring: true, frequency: "daily", active_from: Date.new(2026, 8, 1))
+
+    calls = []
+    Webpush.stub(:payload_send, ->(**kwargs) { calls << kwargs }) do
+      travel_to Time.zone.local(2026, 8, 17, 18, 5) do
+        DailyGoalReminderJob.perform_now
+      end
+    end
+
+    assert_empty calls
+  end
 end

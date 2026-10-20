@@ -101,4 +101,19 @@ class AppointmentReminderJobTest < ActiveJob::TestCase
     assert_includes endpoints, "https://push.example/theirs"
     assert_equal 2, calls.size
   end
+
+  test "le compte démo ne reçoit jamais de rappel" do
+    demo = User.create!(email_address: "demo@movethespark.app", password: "password", demo: true)
+    PushSubscription.create!(user: demo, endpoint: "https://push.example/demo", p256dh_key: "a", auth_key: "b")
+    Appointment.create!(user: demo, title: "Dentiste", starts_at: Time.zone.local(2026, 8, 17, 10, 0), reminder_lead_minutes: 30)
+
+    calls = []
+    Webpush.stub(:payload_send, ->(**kwargs) { calls << kwargs }) do
+      travel_to Time.zone.local(2026, 8, 17, 9, 30) do
+        AppointmentReminderJob.perform_now
+      end
+    end
+
+    assert_empty calls
+  end
 end

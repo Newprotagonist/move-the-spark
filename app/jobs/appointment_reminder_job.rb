@@ -5,7 +5,7 @@ class AppointmentReminderJob < ApplicationJob
   queue_as :default
 
   def perform
-    User.find_each do |user|
+    User.not_demo.find_each do |user|
       user.appointments.where(reminder_sent_at: nil).where("starts_at >= ?", Time.current).find_each do |appointment|
         next if appointment.reminder_due_at > Time.current
 

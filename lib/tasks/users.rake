@@ -15,6 +15,7 @@ namespace :users do
     email_address = args.email_address.presence || abort("Usage: bin/rails \"users:reset_password_link[someone@example.com]\"")
 
     user = User.find_by(email_address: email_address) || abort("Aucun compte pour #{email_address}.")
+    abort "#{email_address} est le compte démo public : voir demo:create pour en changer le mot de passe." if user.demo?
     host = ENV["RESET_LINK_HOST"].presence || (Rails.env.production? ? "https://movethespark.com" : "http://localhost:3000")
 
     puts "#{host}/passwords/#{user.password_reset_token}/edit"

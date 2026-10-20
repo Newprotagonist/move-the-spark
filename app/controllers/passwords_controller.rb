@@ -12,6 +12,8 @@ class PasswordsController < ApplicationController
   end
 
   def update
+    return redirect_to new_session_path, alert: "Ce compte n'autorise pas le changement de mot de passe." if @user.demo?
+
     if @user.update(params.permit(:password, :password_confirmation))
       @user.sessions.destroy_all
       redirect_to new_session_path, notice: "Mot de passe mis à jour."

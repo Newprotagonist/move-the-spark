@@ -35,4 +35,14 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to edit_password_path(token)
   end
+
+  test "update refuse de changer le mot de passe du compte démo, même avec un token valide" do
+    demo = User.create!(email_address: "demo@movethespark.app", password: "password", demo: true)
+
+    patch password_path(demo.password_reset_token),
+      params: { password: "new-password", password_confirmation: "new-password" }
+
+    assert_redirected_to new_session_path
+    assert demo.reload.authenticate("password")
+  end
 end

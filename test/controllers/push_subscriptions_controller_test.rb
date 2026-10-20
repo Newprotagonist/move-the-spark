@@ -61,4 +61,15 @@ class PushSubscriptionsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :no_content
   end
+
+  test "le compte démo ne peut pas s'abonner aux notifications push" do
+    demo = User.create!(email_address: "demo@movethespark.app", password: "password", demo: true)
+    sign_in_as(demo)
+
+    assert_no_difference("PushSubscription.count") do
+      post push_subscription_path, params: { endpoint: "https://push.example/demo", p256dh_key: "p", auth_key: "a" }.to_json,
+           headers: { "Content-Type" => "application/json" }
+    end
+    assert_response :no_content
+  end
 end
